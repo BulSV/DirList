@@ -9,7 +9,7 @@ CONFIG(debug, debug|release) {
     win32:OBJECTS_DIR = ../debug/win32/objects
     win32:MOC_DIR = ../debug/win32/moc
 
-    TARGET = 1d
+    TARGET = DirListd
 
     DEFINES += DEBUG
 }
@@ -22,7 +22,7 @@ else {
     win32:OBJECTS_DIR = ../release/win32/objects
     win32:MOC_DIR = ../release/win32/moc
 
-    TARGET = 1
+    TARGET = DirList
 }
 
 HEADERS += \
