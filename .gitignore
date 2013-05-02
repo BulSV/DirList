@@ -1,0 +1,36 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Binary files
+*.exe
+DirList
+DirListd
+
+# Don't needed dirs
+bin
+obj
+patches
+
+# Don't needed files
+*.depend
+*.layout
+
+# Qt-es
+
+*.pro.user
+*.pro.user.*
+moc_*.cpp
+qrc_*.cpp
+Makefile*
+*-build-*
