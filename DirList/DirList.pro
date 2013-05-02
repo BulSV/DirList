@@ -29,5 +29,5 @@ HEADERS += \
 
 
 SOURCES += \
-    1.cpp
+    DirList.cpp
 
