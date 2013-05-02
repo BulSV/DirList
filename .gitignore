@@ -14,7 +14,7 @@
 
 # Binary files
 *.exe
-DirList
+DirList!/
 DirListd
 
 # Don't needed dirs
