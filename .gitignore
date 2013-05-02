@@ -14,7 +14,7 @@
 
 # Binary files
 *.exe
-MyStrTokenFunc
+DirList*
 
 # Don't needed dirs
 bin
