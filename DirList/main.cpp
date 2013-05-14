@@ -4,14 +4,38 @@
 #include <iostream>
 #include <QFile>
 #include <QTextStream>
+#include <QDirIterator>
+
+void recursive(char* argv)
+{
+    QDirIterator it(argv, QDirIterator::Subdirectories);
+
+    while(it.hasNext())
+    {
+        std::cout << qPrintable(it.next()) << std::endl;
+    }
+}
+
+void recursive(char* argv, QFile& file)
+{
+    QDirIterator it(argv, QDirIterator::Subdirectories);
+    QTextStream out(&file);
+
+    while(it.hasNext())
+    {
+        std::cout << qPrintable(it.next()) << std::endl;
+        out << qPrintable(it.next()) << "\n";
+    }
+}
 
 void help()
 {
-    std::cout << "DirList -h\n";
+    std::cout << "DirList [-h]\n";
     std::cout << "-this help\n";
-    std::cout << "DirList [path to list]\n";
-    std::cout << "DirList [path to list] [file name to save results]\n";
-    std::cout << "DirList [path to list] [path to file with file name to save results]\n";
+    std::cout << "DirList [path to list] [-r]\n";
+    std::cout << "DirList [path to list] [file name to save results] [-r]\n";
+    std::cout << "DirList [path to list] [path to file with file name to save results] [-r]\n";
+    std::cout << "- -r is recursive option\n";
     std::cout << "Ctrl + C to skip\n";
 }
 
@@ -24,6 +48,16 @@ void parseToFile(QFileInfoList list, int argc, char** argv)
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
         return;
+
+    for(int i = 2; i < argc; ++i)
+    {
+        if(QString(argv[i]) == QString("-r"))
+        {
+            recursive(argv[1], file);
+            file.close();
+            return;
+        }
+    }
 
     QTextStream out(&file);
     out <<  "     Bytes Filename\n";
@@ -59,6 +93,14 @@ int main(int argc, char** argv)
     {
         help();
         return app.exec();
+    }
+
+    for(int i = 2; i < argc; ++i)
+    {
+        if(QString(argv[i]) == QString("-r"))
+        {
+            recursive(argv[1]);
+        }
     }
 
     QDir dir;
