@@ -5,17 +5,30 @@
 #include <QFile>
 #include <QTextStream>
 
-void parseToFile(QFileInfoList list, int argc, QTextStream &out)
+void parseToFile(QFileInfoList list, int argc, char** argv)
 {
+    QFile file;
+    QString path;
+    QFileInfo info;
+
+    file.setFileName(argv[2]);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return;
+
+    QTextStream out(&file);
+    out <<  "     Bytes Filename\n";
     for (int i = 0; i < list.size(); ++i)
     {
         QFileInfo fileInfo = list.at(i);
 
-        if(argc == 3)
-        {
-            out << qPrintable(QString("%1 %2").arg(fileInfo.size(), 10).arg(fileInfo.fileName())) << "\n";
-        }
+        out << QString("%1 %2").arg(fileInfo.size(), 10).arg(fileInfo.fileName()) << "\n";
     }
+    info.setFile(file);
+
+    std::cout << "\nSaving file: " << qPrintable(info.fileName()) << " into " << argv[2] << std::endl;
+
+    file.close();
 }
 
 void parseToConsole(QFileInfoList list)
@@ -35,7 +48,7 @@ int main(int argc, char** argv)
     QDir dir;
 
     dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs);
-    dir.setSorting(QDir::Size | QDir::Reversed | QDir::DirsFirst);
+    dir.setSorting(QDir::Size | QDir::DirsFirst);
 
     QString path = argv[1];
 
@@ -45,17 +58,10 @@ int main(int argc, char** argv)
 
     if(argc > 2)
     {
-        QFile file(argv[2]);
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-            return app.exec();
-
-        QTextStream out(&file);
-        out <<  "     Bytes Filename\n";
-        parseToFile(list, argc, out);
-        file.close();
+        parseToFile(list, argc, argv);
     }
 
-    std::cout << "     Bytes Filename" << std::endl;
+    std::cout << "\n     Bytes Filename" << std::endl;
     parseToConsole(list);
 
 
