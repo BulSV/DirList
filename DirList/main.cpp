@@ -5,10 +5,19 @@
 #include <QFile>
 #include <QTextStream>
 
+void help()
+{
+    std::cout << "DirList -h\n";
+    std::cout << "-this help\n";
+    std::cout << "DirList [path to list]\n";
+    std::cout << "DirList [path to list] [file name to save results]\n";
+    std::cout << "DirList [path to list] [path to file with file name to save results]\n";
+    std::cout << "Ctrl + C to skip\n";
+}
+
 void parseToFile(QFileInfoList list, int argc, char** argv)
 {
     QFile file;
-    QString path;
     QFileInfo info;
 
     file.setFileName(argv[2]);
@@ -45,6 +54,13 @@ void parseToConsole(QFileInfoList list)
 int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
+
+    if(QString(argv[1]) == QString("-h"))
+    {
+        help();
+        return app.exec();
+    }
+
     QDir dir;
 
     dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs);
