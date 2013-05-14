@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv)
 {
-    //QCoreApplication app(argc, argv);
+    QCoreApplication app(argc, argv);
     QDir dir;
 
     dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
@@ -27,6 +27,6 @@ int main(int argc, char** argv)
         std::cout << std::endl;
     }
 
-    return 0; //app.exec();
+    return app.exec();
 }
 
