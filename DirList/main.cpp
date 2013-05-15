@@ -6,25 +6,52 @@
 #include <QTextStream>
 #include <QDirIterator>
 
-void recursive(char* argv)
+void recursive(QString& dirPath)
 {
-    QDirIterator it(argv, QDirIterator::Subdirectories);
+    QDir dir(dirPath);
+    dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
+    dir.setSorting(QDir::Name | QDir::DirsLast);
+    QFileInfoList list = dir.entryInfoList();
 
-    while(it.hasNext())
+    for(int iList = 0; iList < list.size(); ++iList)
     {
-        std::cout << qPrintable(it.next()) << std::endl;
+        QFileInfo fileInfo = list.at(iList);
+        QString filePath = fileInfo.absoluteFilePath();
+
+        if(fileInfo.isDir())
+        {
+            std::cout << std::endl << qPrintable(filePath) << ":" << std::endl;
+            recursive(filePath);
+        }
+        else
+        {
+            std::cout << qPrintable(fileInfo.fileName()) << std::endl;
+        }
     }
 }
 
-void recursive(char* argv, QFile& file)
+void recursive(QString& dirPath, QFile& file)
 {
-    QDirIterator it(argv, QDirIterator::Subdirectories);
+    QDir dir(dirPath);
+    dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
+    dir.setSorting(QDir::Name | QDir::DirsLast);
     QTextStream out(&file);
+    QFileInfoList list = dir.entryInfoList();
 
-    while(it.hasNext())
+    for(int iList = 0; iList < list.size(); ++iList)
     {
-        std::cout << qPrintable(it.next()) << std::endl;
-        out << qPrintable(it.next()) << "\n";
+        QFileInfo fileInfo = list.at(iList);
+        QString filePath = fileInfo.absoluteFilePath();
+
+        if(fileInfo.isDir())
+        {
+            out << "\n" << qPrintable(filePath) << ":" << "\n";
+            recursive(filePath, file);
+        }
+        else
+        {
+            out << qPrintable(fileInfo.fileName()) << "\n";
+        }
     }
 }
 
@@ -53,19 +80,20 @@ void parseToFile(QFileInfoList list, int argc, char** argv)
     {
         if(QString(argv[i]) == QString("-r"))
         {
-            recursive(argv[1], file);
+            QString s = argv[1];
+            recursive(s, file);
             file.close();
             return;
         }
     }
 
     QTextStream out(&file);
-    out <<  "     Bytes Filename\n";
+
     for (int i = 0; i < list.size(); ++i)
     {
         QFileInfo fileInfo = list.at(i);
 
-        out << QString("%1 %2").arg(fileInfo.size(), 10).arg(fileInfo.fileName()) << "\n";
+        out << QString("%1").arg(fileInfo.fileName()) << "\n";
     }
     info.setFile(file);
 
@@ -80,10 +108,19 @@ void parseToConsole(QFileInfoList list)
     {
         QFileInfo fileInfo = list.at(i);
 
-        std::cout << qPrintable(QString("%1 %2").arg(fileInfo.size(), 10).arg(fileInfo.fileName()));
+        std::cout << qPrintable(QString("%1").arg(fileInfo.fileName()));
         std::cout << std::endl;
     }
 }
+
+enum OPTIONS
+{
+    NONE = 0x00,
+    HELP = 0x01,
+    SHOWDIRS = 0x02,
+    HIDECONSOLE = 0x04,
+    RECURSIVE = 0x08
+};
 
 int main(int argc, char** argv)
 {
@@ -98,15 +135,16 @@ int main(int argc, char** argv)
     for(int i = 2; i < argc; ++i)
     {
         if(QString(argv[i]) == QString("-r"))
-        {
-            recursive(argv[1]);
+        {            
+            QString s = argv[1];
+            recursive(s);
         }
     }
 
     QDir dir;
 
-    dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs);
-    dir.setSorting(QDir::Size | QDir::DirsFirst);
+    dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
+    dir.setSorting(QDir::Name | QDir::DirsLast);
 
     QString path = argv[1];
 
@@ -119,9 +157,24 @@ int main(int argc, char** argv)
         parseToFile(list, argc, argv);
     }
 
-    std::cout << "\n     Bytes Filename" << std::endl;
     parseToConsole(list);
 
+    qDebug() << QString::number(NONE); //0
+    qDebug() << QString::number(HELP); //1
+    qDebug() << QString::number(SHOWDIRS); //2
+    qDebug() << QString::number(HELP | SHOWDIRS); //3
+    qDebug() << QString::number(HIDECONSOLE); //4
+    qDebug() << QString::number(HELP | HIDECONSOLE); //5
+    qDebug() << QString::number(SHOWDIRS | HIDECONSOLE); //6
+    qDebug() << QString::number(HELP | SHOWDIRS | HIDECONSOLE); //7
+    qDebug() << QString::number(RECURSIVE); //8
+    qDebug() << QString::number(HELP | RECURSIVE); //9
+    qDebug() << QString::number(SHOWDIRS | RECURSIVE); //10
+    qDebug() << QString::number(HELP | SHOWDIRS | RECURSIVE); //11
+    qDebug() << QString::number(HIDECONSOLE | RECURSIVE); //12
+    qDebug() << QString::number(HELP | HIDECONSOLE | RECURSIVE); //13
+    qDebug() << QString::number(SHOWDIRS | HIDECONSOLE | RECURSIVE); //14
+    qDebug() << QString::number(HELP | SHOWDIRS | HIDECONSOLE | RECURSIVE); //15
 
 
     return app.exec();

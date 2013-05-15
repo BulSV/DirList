@@ -21,6 +21,8 @@ DirListd
 bin
 obj
 patches
+debug
+release
 
 # Don't needed files
 *.depend
