@@ -33,3 +33,5 @@ HEADERS += \
 SOURCES += \
     main.cpp
 
+OTHER_FILES += TODO.txt
+
