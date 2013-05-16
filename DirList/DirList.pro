@@ -1,7 +1,7 @@
 QT -= gui
 TEMPLATE = app
 CONFIG += console
-#CONFIG -= app_bundle
+CONFIG -= app_bundle
 CONFIG(debug, debug|release) {
     unix:DESTDIR = ../debug/unix
     unix:OBJECTS_DIR = ../debug/unix/objects
