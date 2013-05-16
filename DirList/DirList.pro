@@ -28,10 +28,12 @@ else {
 }
 
 HEADERS += \
+    parser.h
 
 
 SOURCES += \
-    main.cpp
+    main.cpp \
+    parser.cpp
 
 OTHER_FILES += TODO.txt
 
