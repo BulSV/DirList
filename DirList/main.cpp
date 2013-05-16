@@ -42,6 +42,7 @@ int main(int argc, char** argv)
 
     Parser::parseToConsole(list);
 
+#ifdef DEBUG
     qDebug() << QString::number(Parser::HELP); //-1
     qDebug() << QString::number(Parser::HELP | Parser::SHOWDIRS); //-1
     qDebug() << QString::number(Parser::HELP | Parser::HIDECONSOLE); //-1
@@ -58,6 +59,7 @@ int main(int argc, char** argv)
     qDebug() << QString::number(Parser::SHOWDIRS | Parser::RECURSIVE); //5
     qDebug() << QString::number(Parser::HIDECONSOLE | Parser::RECURSIVE); //6
     qDebug() << QString::number(Parser::SHOWDIRS | Parser::HIDECONSOLE | Parser::RECURSIVE); //7
+#endif
 
     return app.exec();
 }
