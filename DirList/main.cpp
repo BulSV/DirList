@@ -42,23 +42,22 @@ int main(int argc, char** argv)
 
     Parser::parseToConsole(list);
 
+    qDebug() << QString::number(Parser::HELP); //-1
+    qDebug() << QString::number(Parser::HELP | Parser::SHOWDIRS); //-1
+    qDebug() << QString::number(Parser::HELP | Parser::HIDECONSOLE); //-1
+    qDebug() << QString::number(Parser::HELP | Parser::SHOWDIRS | Parser::HIDECONSOLE); //-1
+    qDebug() << QString::number(Parser::HELP | Parser::RECURSIVE); //-1
+    qDebug() << QString::number(Parser::HELP | Parser::SHOWDIRS | Parser::RECURSIVE); //-1
+    qDebug() << QString::number(Parser::HELP | Parser::HIDECONSOLE | Parser::RECURSIVE); //-1
+    qDebug() << QString::number(Parser::HELP | Parser::SHOWDIRS | Parser::HIDECONSOLE | Parser::RECURSIVE); //-1
     qDebug() << QString::number(Parser::NONE); //0
-    qDebug() << QString::number(Parser::HELP); //1
-    qDebug() << QString::number(Parser::SHOWDIRS); //2
-    qDebug() << QString::number(Parser::HELP | Parser::SHOWDIRS); //3
-    qDebug() << QString::number(Parser::HIDECONSOLE); //4
-    qDebug() << QString::number(Parser::HELP | Parser::HIDECONSOLE); //5
-    qDebug() << QString::number(Parser::SHOWDIRS | Parser::HIDECONSOLE); //6
-    qDebug() << QString::number(Parser::HELP | Parser::SHOWDIRS | Parser::HIDECONSOLE); //7
-    qDebug() << QString::number(Parser::RECURSIVE); //8
-    qDebug() << QString::number(Parser::HELP | Parser::RECURSIVE); //9
-    qDebug() << QString::number(Parser::SHOWDIRS | Parser::RECURSIVE); //10
-    qDebug() << QString::number(Parser::HELP | Parser::SHOWDIRS | Parser::RECURSIVE); //11
-    qDebug() << QString::number(Parser::HIDECONSOLE | Parser::RECURSIVE); //12
-    qDebug() << QString::number(Parser::HELP | Parser::HIDECONSOLE | Parser::RECURSIVE); //13
-    qDebug() << QString::number(Parser::SHOWDIRS | Parser::HIDECONSOLE | Parser::RECURSIVE); //14
-    qDebug() << QString::number(Parser::HELP | Parser::SHOWDIRS | Parser::HIDECONSOLE | Parser::RECURSIVE); //15
-
+    qDebug() << QString::number(Parser::SHOWDIRS); //1
+    qDebug() << QString::number(Parser::HIDECONSOLE); //2
+    qDebug() << QString::number(Parser::SHOWDIRS | Parser::HIDECONSOLE); //3
+    qDebug() << QString::number(Parser::RECURSIVE); //4
+    qDebug() << QString::number(Parser::SHOWDIRS | Parser::RECURSIVE); //5
+    qDebug() << QString::number(Parser::HIDECONSOLE | Parser::RECURSIVE); //6
+    qDebug() << QString::number(Parser::SHOWDIRS | Parser::HIDECONSOLE | Parser::RECURSIVE); //7
 
     return app.exec();
 }

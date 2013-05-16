@@ -18,11 +18,11 @@ public:
 
     enum OPTION
     {
+        HELP = -1,
         NONE = 0x00,
         SHOWDIRS = 0x01,
         HIDECONSOLE = 0x02,
-        RECURSIVE = 0x04,
-        HELP = -1
+        RECURSIVE = 0x04
     };
     Q_DECLARE_FLAGS(OPTIONS, OPTION)
 };
