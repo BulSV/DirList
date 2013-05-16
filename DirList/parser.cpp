@@ -3,11 +3,13 @@
 #include <iostream>
 #include <QString>
 #include <QTextStream>
+#include <QDebug>
 
 Parser::Parser()
 {
 }
 
+Parser::OPTIONS Parser::itsOptions = NONE;
 
 void Parser::parseToFile(QFileInfoList list, int argc, char** argv)
 {
@@ -23,7 +25,7 @@ void Parser::parseToFile(QFileInfoList list, int argc, char** argv)
     {
         if(QString(argv[i]) == QString("-r"))
         {
-            QString s = argv[1];
+            QString s = QString::fromUtf8(argv[1]);
             recursive(s, file);
             file.close();
             return;
@@ -114,4 +116,52 @@ void Parser::recursive(QString &dirPath, QFile &file)
             out << qPrintable(fileInfo.fileName()) << "\n";
         }
     }
+}
+
+void Parser::switcher(OPTIONS opt)
+{
+    switch (opt) {
+    case HELP: help();
+        break;
+    case NONE:
+        break;
+    case SHOWDIRS: help();
+        break;
+    case HIDECONSOLE: help();
+        break;
+    case RECURSIVE: help();
+        break;
+    case DIRSNOCONSOLE: help();
+        break;
+    case DIRSRECURSIVE: help();
+        break;
+    case NOCONSOLERECURSIVE: help();
+        break;
+    case ALLOPTIONS: help();
+        break;
+    default: qDebug() << "ERROR";
+        break;
+    }
+}
+
+Parser::OPTIONS Parser::parseOptions(QString &opt)
+{
+    if(opt == "--help") return HELP;
+    if(opt == "-d") return SHOWDIRS;
+    if(opt == "-h") return HIDECONSOLE;
+    if(opt == "-r") return RECURSIVE;
+    if(opt == "-dh" || opt == "-hd") return SHOWDIRS | HIDECONSOLE;
+    if(opt == "-dr" || opt == "-rd") return SHOWDIRS | RECURSIVE;
+    if(opt == "-hr" || opt == "-rh") return HIDECONSOLE | RECURSIVE;
+    if(opt == "-dhr" || opt == "-drh" ||
+            opt == "-hdr" || opt == "-hrd" ||
+            opt == "-rdh" || opt == "-rhd")
+        return SHOWDIRS | HIDECONSOLE | RECURSIVE;
+
+    return NONE;
+}
+
+void Parser::collectorOptions(Parser::OPTIONS opt)
+{
+    itsOptions = itsOptions | opt;
 }
