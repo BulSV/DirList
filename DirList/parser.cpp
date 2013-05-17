@@ -165,3 +165,8 @@ void Parser::collectorOptions(Parser::OPTIONS opt)
 {
     itsOptions = itsOptions | opt;
 }
+
+Parser::OPTIONS Parser::getCollectedOptions()
+{
+    return itsOptions;
+}

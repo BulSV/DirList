@@ -28,12 +28,13 @@ public:
     static void parseToConsole(QFileInfoList list);
     static void help();
     static void recursive(QString& dirPath);
-    static void recursive(QString& dirPath, QFile& file);
+    static void recursive(QString& dirPath, QFile& file);    
+private:
+    static OPTIONS itsOptions;
     static void switcher(OPTIONS opt);
     static OPTIONS parseOptions(QString& opt);
     static void collectorOptions(OPTIONS opt);
-private:
-    static OPTIONS itsOptions;
+    static OPTIONS getCollectedOptions();
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Parser::OPTIONS)
