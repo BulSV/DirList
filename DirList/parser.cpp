@@ -14,6 +14,10 @@ void Parser::parse(int argc, char **argv)
     {
         collectorOptions(parseOptions(QString(argv[i])));
     }
+#ifdef DEBUG
+    qDebug() << "getCollectedOptions() =" << getCollectedOptions();
+    qDebug() << "(int)getCollectedOptions() =" << (int)getCollectedOptions();
+#endif
     switcher(getCollectedOptions());
 }
 
@@ -126,24 +130,36 @@ void Parser::recursive(QString &dirPath, QFile &file)
 
 void Parser::switcher(Parser::OPTIONS opt)
 {
+#ifdef DEBUG0
+    qDebug() << "swithcer begin";
+#endif
     if(opt.testFlag(HELP))
         help();
-    if(opt.testFlag(NONE))
+    if(opt.testFlag(Parser::NONE) && !opt.testFlag(SHOWDIRS) && !opt.testFlag(HIDECONSOLE) && !opt.testFlag(RECURSIVE))
         qDebug() << "NONE";
-    if(opt.testFlag(SHOWDIRS))
+    if(opt.testFlag(SHOWDIRS) && !opt.testFlag(HIDECONSOLE) && !opt.testFlag(RECURSIVE))
         qDebug() << "SHOWDIRS";
-    if(opt.testFlag(RECURSIVE))
+    if(!opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE) && !opt.testFlag(RECURSIVE))
+        qDebug() << "HIDECONSOLE";
+    if(!opt.testFlag(SHOWDIRS) && !opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
         qDebug() << "RECURSIVE";
-    if(opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE))
+    if(opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE) && !opt.testFlag(RECURSIVE))
         qDebug() << "SHOWDIRS | HIDECONSOLE";
-    if(opt.testFlag(SHOWDIRS) && opt.testFlag(RECURSIVE))
+    if(opt.testFlag(SHOWDIRS) && !opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
         qDebug() << "SHOWDIRS | RECURSIVE";
-    if(opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
+    if(!opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
         qDebug() << "HIDECONSOLE | RECURSIVE";
-    if(opt.testFlag(Parser::NONE) && opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
+    if(opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
         qDebug() << "SHOWDIRS | HIDECONSOLE | RECURSIVE";
-    //else
-        //qDebug() << "EROR";
+    if(!opt.testFlag(NONE) && !opt.testFlag(SHOWDIRS) && !opt.testFlag(HIDECONSOLE) && !opt.testFlag(RECURSIVE))
+        qDebug() << "EROR";
+#ifdef DEBUG0
+    qDebug() << "opt.testFlag(NONE) =" << opt.testFlag(NONE);
+    qDebug() << "opt.testFlag(SHOWDIRS) =" << opt.testFlag(SHOWDIRS);
+    qDebug() << "opt.testFlag(HIDECONSOLE) =" << opt.testFlag(HIDECONSOLE);
+    qDebug() << "opt.testFlag(RECURSIVE) =" << opt.testFlag(RECURSIVE);
+    qDebug() << "switcher end";
+#endif
 }
 
 Parser::OPTIONS Parser::parseOptions(QString opt)
@@ -166,6 +182,9 @@ Parser::OPTIONS Parser::parseOptions(QString opt)
 void Parser::collectorOptions(Parser::OPTIONS opt)
 {
     itsOptions = itsOptions | opt;
+#ifdef DEBUG0
+    qDebug() << "itsOptions =" << QString::number(itsOptions);
+#endif
 }
 
 Parser::OPTIONS Parser::getCollectedOptions()
