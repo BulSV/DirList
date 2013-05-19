@@ -9,6 +9,8 @@ int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
 
+    Parser::parse(argc, argv);
+
     if(QString(argv[1]) == QString("-h"))
     {
         Parser::help();
