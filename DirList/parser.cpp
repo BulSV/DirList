@@ -5,9 +5,9 @@
 #include <QTextStream>
 #include <QDebug>
 
-Parser::Parser()
-{
-}
+//Parser::Parser()
+//{
+//}
 
 Parser::OPTIONS Parser::itsOptions = NONE;
 
@@ -118,30 +118,26 @@ void Parser::recursive(QString &dirPath, QFile &file)
     }
 }
 
-void Parser::switcher(OPTIONS opt)
+void Parser::switcher(Parser::OPTIONS opt)
 {
-    switch (opt) {
-    case HELP: help();
-        break;
-    case NONE:
-        break;
-    case SHOWDIRS: help();
-        break;
-    case HIDECONSOLE: help();
-        break;
-    case RECURSIVE: help();
-        break;
-    case DIRSNOCONSOLE: help();
-        break;
-    case DIRSRECURSIVE: help();
-        break;
-    case NOCONSOLERECURSIVE: help();
-        break;
-    case ALLOPTIONS: help();
-        break;
-    default: qDebug() << "ERROR";
-        break;
-    }
+    if(opt.testFlag(HELP))
+        help();
+    if(opt.testFlag(NONE))
+        qDebug() << "NONE";
+    if(opt.testFlag(SHOWDIRS))
+        qDebug() << "SHOWDIRS";
+    if(opt.testFlag(RECURSIVE))
+        qDebug() << "RECURSIVE";
+    if(opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE))
+        qDebug() << "SHOWDIRS | HIDECONSOLE";
+    if(opt.testFlag(SHOWDIRS) && opt.testFlag(RECURSIVE))
+        qDebug() << "SHOWDIRS | RECURSIVE";
+    if(opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
+        qDebug() << "HIDECONSOLE | RECURSIVE";
+    if(opt.testFlag(Parser::NONE) && opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
+        qDebug() << "SHOWDIRS | HIDECONSOLE | RECURSIVE";
+    else
+        qDebug() << "EROR";
 }
 
 Parser::OPTIONS Parser::parseOptions(QString &opt)
