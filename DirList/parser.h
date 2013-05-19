@@ -14,16 +14,11 @@ public:
         NONE = 0x00,
         SHOWDIRS = 0x01,
         HIDECONSOLE = 0x02,
-//        DIRSNOCONSOLE = SHOWDIRS | HIDECONSOLE,
-        RECURSIVE = 0x04//,
-//        DIRSRECURSIVE = SHOWDIRS | RECURSIVE,
-//        NOCONSOLERECURSIVE = HIDECONSOLE | RECURSIVE,
-//        ALLOPTIONS = NONE | SHOWDIRS | HIDECONSOLE | RECURSIVE
+        RECURSIVE = 0x04
     };
     Q_DECLARE_FLAGS(OPTIONS, OPTION)
 
-//    Parser();
-
+    static void parse(int argc, char** argv);
     static void parseToFile(QFileInfoList list, int argc, char** argv);
     static void parseToConsole(QFileInfoList list);
     static void help();
@@ -32,7 +27,7 @@ public:
 private:
     static OPTIONS itsOptions;
     static void switcher(OPTIONS opt);
-    static OPTIONS parseOptions(QString& opt);
+    static OPTIONS parseOptions(QString opt);
     static void collectorOptions(OPTIONS opt);
     static OPTIONS getCollectedOptions();
 };

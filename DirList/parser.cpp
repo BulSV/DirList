@@ -5,11 +5,17 @@
 #include <QTextStream>
 #include <QDebug>
 
-//Parser::Parser()
-//{
-//}
 
 Parser::OPTIONS Parser::itsOptions = NONE;
+
+void Parser::parse(int argc, char **argv)
+{
+    for(int i = 1; i < argc; ++i)
+    {
+        collectorOptions(parseOptions(QString(argv[i])));
+    }
+    switcher(getCollectedOptions());
+}
 
 void Parser::parseToFile(QFileInfoList list, int argc, char** argv)
 {
@@ -136,11 +142,11 @@ void Parser::switcher(Parser::OPTIONS opt)
         qDebug() << "HIDECONSOLE | RECURSIVE";
     if(opt.testFlag(Parser::NONE) && opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
         qDebug() << "SHOWDIRS | HIDECONSOLE | RECURSIVE";
-    else
-        qDebug() << "EROR";
+    //else
+        //qDebug() << "EROR";
 }
 
-Parser::OPTIONS Parser::parseOptions(QString &opt)
+Parser::OPTIONS Parser::parseOptions(QString opt)
 {
     if(opt == "--help") return HELP;
     if(opt == "-d") return SHOWDIRS;
