@@ -51,8 +51,10 @@ void Parser::parseToFile(QFileInfoList list, int argc, char** argv)
         out << QString("%1").arg(fileInfo.fileName()) << "\n";
     }
     info.setFile(file);
+    QString p = info.filePath();
+    QString f = info.fileName();
 
-    std::cout << "\nSaving file: " << qPrintable(info.fileName()) << " into " << argv[2] << std::endl;
+    std::cout << "\nSaving file: " << qPrintable(info.fileName()) << " into " << qPrintable(p.remove(p.size() - f.size(), p.size() - 1)/*argv[2]*/) << std::endl;
 
     file.close();
 }
