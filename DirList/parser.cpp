@@ -136,23 +136,23 @@ void Parser::switcher(Parser::OPTIONS opt)
 #endif
     if(opt.testFlag(HELP))
         help();
-    if(opt.testFlag(Parser::NONE) && !opt.testFlag(SHOWDIRS) && !opt.testFlag(HIDECONSOLE) && !opt.testFlag(RECURSIVE))
+    if(!opt.testFlag(HELP) && opt.testFlag(Parser::NONE) && !opt.testFlag(SHOWDIRS) && !opt.testFlag(HIDECONSOLE) && !opt.testFlag(RECURSIVE))
         qDebug() << "NONE";
-    if(opt.testFlag(SHOWDIRS) && !opt.testFlag(HIDECONSOLE) && !opt.testFlag(RECURSIVE))
+    if(!opt.testFlag(HELP) && opt.testFlag(SHOWDIRS) && !opt.testFlag(HIDECONSOLE) && !opt.testFlag(RECURSIVE))
         qDebug() << "SHOWDIRS";
-    if(!opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE) && !opt.testFlag(RECURSIVE))
+    if(!opt.testFlag(HELP) && !opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE) && !opt.testFlag(RECURSIVE))
         qDebug() << "HIDECONSOLE";
-    if(!opt.testFlag(SHOWDIRS) && !opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
+    if(!opt.testFlag(HELP) && !opt.testFlag(SHOWDIRS) && !opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
         qDebug() << "RECURSIVE";
-    if(opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE) && !opt.testFlag(RECURSIVE))
+    if(!opt.testFlag(HELP) && opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE) && !opt.testFlag(RECURSIVE))
         qDebug() << "SHOWDIRS | HIDECONSOLE";
-    if(opt.testFlag(SHOWDIRS) && !opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
+    if(!opt.testFlag(HELP) && opt.testFlag(SHOWDIRS) && !opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
         qDebug() << "SHOWDIRS | RECURSIVE";
-    if(!opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
+    if(!opt.testFlag(HELP) && !opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
         qDebug() << "HIDECONSOLE | RECURSIVE";
-    if(opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
+    if(!opt.testFlag(HELP) && opt.testFlag(SHOWDIRS) && opt.testFlag(HIDECONSOLE) && opt.testFlag(RECURSIVE))
         qDebug() << "SHOWDIRS | HIDECONSOLE | RECURSIVE";
-    if(!opt.testFlag(NONE) && !opt.testFlag(SHOWDIRS) && !opt.testFlag(HIDECONSOLE) && !opt.testFlag(RECURSIVE))
+    if(!opt.testFlag(HELP) && !opt.testFlag(NONE) && !opt.testFlag(SHOWDIRS) && !opt.testFlag(HIDECONSOLE) && !opt.testFlag(RECURSIVE))
         qDebug() << "EROR";
 #ifdef DEBUG0
     qDebug() << "opt.testFlag(NONE) =" << opt.testFlag(NONE);
