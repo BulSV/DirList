@@ -33,6 +33,11 @@ int main(int argc, char** argv)
 
     QString path = argv[1];
 
+    if(!dir.exists(path))
+    {
+        std::cout << "EROR: path to list don't exist\n";
+        return -1;
+    }
     dir.cd(path);
 
     QFileInfoList list = dir.entryInfoList();
