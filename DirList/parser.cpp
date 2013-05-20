@@ -70,13 +70,14 @@ void Parser::parseToConsole(QFileInfoList list)
 
 void Parser::help()
 {
-    std::cout << "DirList [-h]\n";
-    std::cout << "-this help\n";
-    std::cout << "DirList [path to list] [-r]\n";
-    std::cout << "DirList [path to list] [file name to save results] [-r]\n";
-    std::cout << "DirList [path to list] [path to file with file name to save results] [-r]\n";
-    std::cout << "- -r is recursive option\n";
-    std::cout << "Ctrl + C to skip\n";
+    std::cout << "usage:\t[--help]\n";
+    std::cout << "\t<path to list> [options]\n";
+    std::cout << "\t<path to list> <path and file name to save results> [options]\n";
+    std::cout << "options:\n";
+    std::cout << "\t-d\tshow directories\n";
+    std::cout << "\t-h\thide output to console\n";
+    std::cout << "\t-r\trecursively listing\n";
+    std::cout << "Ctrl+C to skip\n";
 }
 
 void Parser::recursive(QString &dirPath)
