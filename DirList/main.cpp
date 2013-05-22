@@ -9,47 +9,11 @@ int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
 
-    Parser::parse(argc, argv);
+    Parser parse(argc, argv);
 
-    if(QString(argv[1]) == QString("-h"))
-    {
-        Parser::help();
-        return app.exec();
-    }
+    parse.applyOptions();
 
-    for(int i = 2; i < argc; ++i)
-    {
-        if(QString(argv[i]) == QString("-r"))
-        {            
-            QString s = argv[1];
-            Parser::recursive(s);
-        }
-    }
-
-    QDir dir;
-
-    dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
-    dir.setSorting(QDir::Name | QDir::DirsLast);
-
-    QString path = argv[1];
-
-    if(!dir.exists(path))
-    {
-        std::cout << "EROR: path to list don't exist\n";
-        return -1;
-    }
-    dir.cd(path);
-
-    QFileInfoList list = dir.entryInfoList();
-
-    if(argc > 2)
-    {
-        Parser::parseToFile(list, argc, argv);
-    }
-
-    Parser::parseToConsole(list);
-
-#ifdef DEBUG
+#ifdef DEBUG_
     qDebug() << QString::number(Parser::HELP); //-1
     qDebug() << QString::number(Parser::HELP | Parser::SHOWDIRS); //-1
     qDebug() << QString::number(Parser::HELP | Parser::HIDECONSOLE); //-1

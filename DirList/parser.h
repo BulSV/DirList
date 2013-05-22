@@ -18,18 +18,22 @@ public:
     };
     Q_DECLARE_FLAGS(OPTIONS, OPTION)
 
-    static void parse(int argc, char** argv);
-    static void parseToFile(QFileInfoList list, int argc, char** argv);
-    static void parseToConsole(QFileInfoList list);
-    static void help();
-    static void recursive(QString& dirPath);
-    static void recursive(QString& dirPath, QFile& file);    
+    Parser(int argc, char** argv);
+
+    void applyOptions();
+    void parseToFile(OPTIONS opt);
+    void parseToConsole(OPTIONS opt);
+    void help();
+    void recursive(QFileInfoList &list);
+    void recursive(QFileInfoList &list, QFile &file);
 private:
-    static OPTIONS itsOptions;
-    static void switcher(OPTIONS opt);
-    static OPTIONS parseOptions(QString opt);
-    static void collectorOptions(OPTIONS opt);
-    static OPTIONS getCollectedOptions();
+    int itsArgc;
+    char** itsArgv;
+    OPTIONS itsOptions;
+    void switcher(OPTIONS opt);
+    OPTIONS parseOptions(QString opt);
+    void collectorOptions(OPTIONS opt);
+    OPTIONS getCollectedOptions();
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Parser::OPTIONS)
