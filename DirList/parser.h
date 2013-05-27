@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QFile>
-#include <QFileInfoList>
+#include <QDir>
 
 class Parser
 {        
@@ -24,11 +24,14 @@ public:
     void parseToFile(OPTIONS opt);
     void parseToConsole(OPTIONS opt);
     void help();
-    void recursive(QFileInfoList &list);
-    void recursive(QFileInfoList &list, QFile &file);
+    void recursive(const QString &dirPath);
+    void recursive(const QString &dirPath, QFile &file);
+    void notRecursive(const QString &dirPath);
+    void notRecursive(const QString &dirPath, QFile&file);
 private:
     int itsArgc;
     char** itsArgv;
+    QDir *itsDir;
     OPTIONS itsOptions;
     void switcher(OPTIONS opt);
     OPTIONS parseOptions(QString opt);

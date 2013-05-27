@@ -1,5 +1,5 @@
 #include "parser.h"
-#include <QDir>
+#include <QFileInfoList>
 #include <iostream>
 #include <QString>
 #include <QTextStream>
@@ -8,6 +8,7 @@
 Parser::Parser(int argc, char **argv)
     : itsArgc(argc)
     , itsArgv(argv)
+    , itsDir(new QDir)
     , itsOptions(NONE)
 {
 }
@@ -18,7 +19,7 @@ void Parser::applyOptions()
     {
         collectorOptions(parseOptions(QString(itsArgv[i])));
     }
-#ifdef DEBUG_
+#ifdef DEBUG
     qDebug() << "getCollectedOptions() =" << getCollectedOptions();
     qDebug() << "(int)getCollectedOptions() =" << (int)getCollectedOptions();
 #endif
@@ -26,40 +27,33 @@ void Parser::applyOptions()
 }
 
 void Parser::parseToFile(OPTIONS opt)
-{
-    QDir dir;
-
+{    
     if(opt.testFlag(SHOWDIRS))
     {
-        dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
+        itsDir->setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
     }
     else
     {
-        dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+        itsDir->setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::NoDotAndDotDot);
     }
 
-    dir.setSorting(QDir::Name | QDir::DirsLast);
+    itsDir->setSorting(QDir::Name | QDir::DirsLast);
 
-    if(!dir.exists(itsArgv[1]))
+    if(!itsDir->exists(itsArgv[1]))
     {
         std::cout << "EROR: path to list don't exist\n";
         return;
     }
 
-    dir.cd(itsArgv[1]);
+    itsDir->cd(itsArgv[1]);
 
-    QFileInfoList list = dir.entryInfoList();
+//    QFileInfoList list = itsDir->entryInfoList();
 
     QFile file;
     QFileInfo info;
 
-//    if(!dir.exists(itsArgv[2]))
-//    {
-//        std::cout << "EROR: path to file list save don't exist\n";
-//        return;
-//    }
-
     file.setFileName(itsArgv[2]);
+    info.setFile(file);
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
@@ -67,12 +61,16 @@ void Parser::parseToFile(OPTIONS opt)
         return;
     }
 
+    QString filePath = info.absoluteFilePath();
+
     if(opt.testFlag(RECURSIVE))
     {
-        recursive(list, file);
+        recursive(filePath, file);
     }
-
-    info.setFile(file);
+    else
+    {
+        notRecursive(filePath, file);
+    }
 
     QString p = info.filePath();
     QString f = info.fileName();
@@ -84,32 +82,32 @@ void Parser::parseToFile(OPTIONS opt)
 
 void Parser::parseToConsole(OPTIONS opt)
 {
-    QDir dir;
-
     if(opt.testFlag(SHOWDIRS))
     {
-        dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
+        itsDir->setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
     }
     else
     {
-        dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+        itsDir->setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::NoDotAndDotDot);
     }
 
-    dir.setSorting(QDir::Name | QDir::DirsLast);
+    itsDir->setSorting(QDir::Name | QDir::DirsLast);
 
-    if(!dir.exists(itsArgv[1]))
+    if(!itsDir->exists(itsArgv[1]))
     {
         std::cout << "EROR: path to list don't exist\n";
         return;
     }
 
-    dir.cd(itsArgv[1]);
-
-    QFileInfoList list = dir.entryInfoList();
+    itsDir->cd(itsArgv[1]);
 
     if(opt.testFlag(RECURSIVE))
     {
-        recursive(list);
+        recursive(itsDir->absolutePath());
+    }
+    else
+    {
+        notRecursive(itsDir->absolutePath());
     }
 }
 
@@ -125,8 +123,10 @@ void Parser::help()
     std::cout << "Ctrl+C to skip\n";
 }
 
-void Parser::recursive(QFileInfoList &list)
+void Parser::recursive(const QString &dirPath)
 {    
+    itsDir->cd(dirPath);
+    QFileInfoList list = itsDir->entryInfoList();
     for(int iList = 0; iList < list.size(); ++iList)
     {
         QFileInfo fileInfo = list.at(iList);
@@ -135,7 +135,7 @@ void Parser::recursive(QFileInfoList &list)
         if(fileInfo.isDir())
         {
             std::cout << std::endl << qPrintable(filePath) << ":" << std::endl;
-            recursive(list);
+            recursive(filePath);
         }
         else
         {
@@ -144,8 +144,11 @@ void Parser::recursive(QFileInfoList &list)
     }
 }
 
-void Parser::recursive(QFileInfoList &list, QFile &file)
-{
+void Parser::recursive(const QString &dirPath, QFile &file)
+{    
+    itsDir->cd(dirPath);
+
+    QFileInfoList list = itsDir->entryInfoList();
     QTextStream out(&file);
 
     for(int iList = 0; iList < list.size(); ++iList)
@@ -156,7 +159,50 @@ void Parser::recursive(QFileInfoList &list, QFile &file)
         if(fileInfo.isDir())
         {
             out << "\n" << filePath << ":" << "\n";
-            recursive(list, file);
+            recursive(filePath, file);
+        }
+        else
+        {
+            out << qPrintable(fileInfo.fileName()) << "\n";
+        }
+    }
+}
+
+void Parser::notRecursive(const QString &dirPath)
+{
+    itsDir->cd(dirPath);
+    QFileInfoList list = itsDir->entryInfoList();
+    for(int iList = 0; iList < list.size(); ++iList)
+    {
+        QFileInfo fileInfo = list.at(iList);
+        QString filePath = fileInfo.absoluteFilePath();
+
+        if(fileInfo.isDir())
+        {
+            std::cout << std::endl << qPrintable(filePath) << ":" << std::endl;
+        }
+        else
+        {
+            std::cout << qPrintable(fileInfo.fileName()) << std::endl;
+        }
+    }
+}
+
+void Parser::notRecursive(const QString &dirPath, QFile &file)
+{
+    itsDir->cd(dirPath);
+
+    QFileInfoList list = itsDir->entryInfoList();
+    QTextStream out(&file);
+
+    for(int iList = 0; iList < list.size(); ++iList)
+    {
+        QFileInfo fileInfo = list.at(iList);
+        QString filePath = fileInfo.absoluteFilePath();
+
+        if(fileInfo.isDir())
+        {
+            out << "\n" << filePath << ":" << "\n";
         }
         else
         {
