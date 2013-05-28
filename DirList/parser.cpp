@@ -2,8 +2,10 @@
 #include <QFileInfoList>
 #include <iostream>
 #include <QString>
-#include <QTextStream>
+
+#ifdef DEBUG
 #include <QDebug>
+#endif
 
 Parser::Parser(int argc, char **argv)
     : itsArgc(argc)
@@ -55,7 +57,7 @@ void Parser::parseToFile(OPTIONS opt)
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        qDebug() << "ERROR opening file:" << file.fileName();
+        std::cout << "ERROR opening file:" << qPrintable(file.fileName());
         return;
     }
 
@@ -233,6 +235,7 @@ void Parser::switcher(Parser::OPTIONS opt)
     {
         parseToConsole(opt);
     }
+    // TODO:
     // if(save to file)
     parseToFile(opt);
 }
