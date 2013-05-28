@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QFile>
 #include <QDir>
+#include <QTextStream>
 
 class Parser
 {        
@@ -25,9 +26,9 @@ public:
     void parseToConsole(OPTIONS opt);
     void help();
     void recursive(const QString &dirPath);
-    void recursive(const QString &dirPath, QFile &file);
+    void recursive(const QString &dirPath, QTextStream &out);
     void notRecursive(const QString &dirPath);
-    void notRecursive(const QString &dirPath, QFile&file);
+    void notRecursive(const QString &dirPath, QTextStream &out);
 private:
     int itsArgc;
     char** itsArgv;
