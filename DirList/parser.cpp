@@ -188,7 +188,8 @@ void Parser::notRecursive(const QString &dirPath)
 
         if(fileInfo.isDir())
         {
-            std::cout << std::endl << qPrintable(filePath) << ":" << std::endl;
+            if(itsOptions.testFlag(SHOWDIRS))
+                std::cout << std::endl << qPrintable(filePath) << ":" << std::endl;
         }
         else
         {
@@ -210,7 +211,8 @@ void Parser::notRecursive(const QString &dirPath, QTextStream &out)
 
         if(fileInfo.isDir())
         {
-            out << "\n" << filePath << ":" << "\n";
+            if(itsOptions.testFlag(SHOWDIRS))
+                out << "\n" << filePath << ":" << "\n";
         }
         else
         {
