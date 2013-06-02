@@ -137,14 +137,12 @@ void Parser::recursive(const QString &dirPath)
             if(itsOptions.testFlag(SHOWDIRS))
             {
                 std::cout << std::endl << qPrintable(filePath) << ":" << std::endl;
-                std::cout << "111111111111";
             }
             recursive(filePath);
         }
         else
         {
-            std::cout << qPrintable(fileInfo.fileName()) << std::endl;
-            std::cout << "22222222222222";
+            std::cout << qPrintable(fileInfo.fileName()) << std::endl;            
         }
     }
 }
