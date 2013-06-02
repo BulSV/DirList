@@ -28,7 +28,7 @@ void Parser::applyOptions()
     switcher(getCollectedOptions());
 }
 
-void Parser::parseToFile(OPTIONS opt)
+void Parser::parseToFile()
 {    
     itsDir->setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
     itsDir->setSorting(QDir::Name | QDir::DirsLast | QDir::Type);
@@ -58,7 +58,7 @@ void Parser::parseToFile(OPTIONS opt)
 
     QString filePath = info.absoluteFilePath();
 
-    if(opt.testFlag(RECURSIVE))
+    if(itsOptions.testFlag(RECURSIVE))
     {
         recursive(filePath, out);
     }
@@ -78,7 +78,7 @@ void Parser::parseToFile(OPTIONS opt)
     file.close();
 }
 
-void Parser::parseToConsole(OPTIONS opt)
+void Parser::parseToConsole()
 {
 
     itsDir->setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
@@ -93,7 +93,7 @@ void Parser::parseToConsole(OPTIONS opt)
     itsDir->cd(itsArgv[1]);
     std::cout << itsArgv[1] << ":" << std::endl;
 
-    if(opt.testFlag(RECURSIVE))
+    if(itsOptions.testFlag(RECURSIVE))
     {
         recursive(itsDir->absolutePath());
     }
@@ -137,12 +137,14 @@ void Parser::recursive(const QString &dirPath)
             if(itsOptions.testFlag(SHOWDIRS))
             {
                 std::cout << std::endl << qPrintable(filePath) << ":" << std::endl;
+                std::cout << "111111111111";
             }
             recursive(filePath);
         }
         else
         {
             std::cout << qPrintable(fileInfo.fileName()) << std::endl;
+            std::cout << "22222222222222";
         }
     }
 }
@@ -232,11 +234,12 @@ void Parser::switcher(Parser::OPTIONS opt)
     }
     if(!opt.testFlag(HIDECONSOLE))
     {
-        parseToConsole(opt);
+        parseToConsole();
     }
-    // TODO:
+
     // if(save to file)
-    parseToFile(opt);
+    if(itsDir->exists(itsArgv[2]))
+        parseToFile();
 }
 
 Parser::OPTIONS Parser::parseOptions(QString opt)

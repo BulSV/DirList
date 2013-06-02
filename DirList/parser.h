@@ -22,8 +22,8 @@ public:
     Parser(int argc, char** argv);
 
     void applyOptions();
-    void parseToFile(OPTIONS opt);
-    void parseToConsole(OPTIONS opt);
+    void parseToFile();
+    void parseToConsole();
     void help();
     void recursive(const QString &dirPath);
     void recursive(const QString &dirPath, QTextStream &out);
