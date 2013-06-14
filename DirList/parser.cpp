@@ -39,13 +39,13 @@ void Parser::parseToFile()
         return;
     }
 
-    itsDir->cd(itsArgv[1]);    
+    itsDir->cd(itsArgv[1]);
 
     QFile file;
     QFileInfo info;
 
     file.setFileName(itsArgv[2]);
-    info.setFile(file);    
+    info.setFile(file);
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
@@ -128,15 +128,15 @@ void Parser::recursive(const QString &dirPath)
         QFileInfo fileInfo = list.at(iList);
         QString filePath = fileInfo.absoluteFilePath();
 #ifdef DEBUG_
-    qDebug() << "list:" << filePath;
-    qDebug() << "list.size:" << list.size();
+        qDebug() << "list:" << filePath;
+        qDebug() << "list.size:" << list.size();
 #endif
 
         if(fileInfo.isDir())
         {
             if(itsOptions.testFlag(SHOWDIRS))
             {
-//                std::cout << std::endl << qPrintable(filePath) << ":" << std::endl;
+                //                std::cout << std::endl << qPrintable(filePath) << ":" << std::endl;
                 QString temp = filePath;
                 std::cout << std::endl << "." << qPrintable(temp.remove(0, QString(itsArgv[1]).size())) << ":" << std::endl;
             }
@@ -144,7 +144,7 @@ void Parser::recursive(const QString &dirPath)
         }
         else
         {
-            std::cout << qPrintable(fileInfo.fileName()) << std::endl;            
+            std::cout << qPrintable(fileInfo.fileName()) << std::endl;
         }
     }
 }
@@ -204,7 +204,7 @@ void Parser::notRecursive(const QString &dirPath, QTextStream &out)
 {
     itsDir->cd(dirPath);
 
-    QFileInfoList list = itsDir->entryInfoList();    
+    QFileInfoList list = itsDir->entryInfoList();
 
     for(int iList = 0; iList < list.size(); ++iList)
     {
@@ -233,7 +233,7 @@ void Parser::switcher(Parser::OPTIONS opt)
     if(opt.testFlag(HELP))
     {
 #ifdef DEBUG_
-    qDebug() << "help!";
+        qDebug() << "help!";
 #endif
         help();
         return;
@@ -283,25 +283,36 @@ Parser::OPTIONS Parser::getCollectedOptions()
     return itsOptions;
 }
 
-QStringList Parser::optParser(QString opts, QString opt, QString rx, QString sep)
+QStringList Parser::polyOptParser(QString opts, QString opt, QString rx, QString del)
 {
-    QRegExp regExp(rx);
+    QRegExp rx_opt(opt);
+    QRegExp rx_rx(rx);
     int pos = 0;
     QStringList list;
     QString str;
 
-    while((pos = regExp.indexIn(opts, pos)) != -1)
+    if(rx_rx.indexIn(opts, pos) != -1)
     {
-        str = regExp.cap(1);
-        list.append(str);
-        pos += regExp.matchedLength();
+        while((pos = rx_opt.indexIn(opts, pos)) != -1)
+        {
+            str = rx_opt.cap(1);
+            list.append(str);
+            pos += rx_opt.matchedLength();
+        }
+    }
+    else
+    {
+        qDebug() << "Options" << opts << "not correcte";
+        qDebug() << "see:" << opt << "and" << rx;
+
+        return list;
     }
 
     QStringList l;
 
     foreach(QString temp, list)
     {
-        l.append(temp.replace(QRegExp(sep), ""));
+        l.append(temp.replace(QRegExp(del), ""));
     }
 
     list = l;
@@ -309,4 +320,9 @@ QStringList Parser::optParser(QString opts, QString opt, QString rx, QString sep
     list.removeDuplicates();
 
     return list;
+}
+
+QStringList Parser::optParser(QString opts, QString rx, QString split, QString del)
+{
+
 }

@@ -41,7 +41,8 @@ private:
     OPTIONS parseOptions(QString opt);
     void collectorOptions(OPTIONS opt);
     OPTIONS getCollectedOptions();
-    static QStringList optParser(QString opts, QString opt, QString rx, QString sep = "");
+    static QStringList polyOptParser(QString opts, QString opt, QString rx, QString del = "");
+    static QStringList optParser(QString opts, QString rx, QString split, QString del = "");
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Parser::OPTIONS)
