@@ -15,7 +15,10 @@ public:
         NONE = 0x00,
         SHOWDIRS = 0x01,
         HIDECONSOLE = 0x02,
-        RECURSIVE = 0x04
+        RECURSIVE = 0x04,
+        HIDENFILES = 0x08,
+        ABSOLUTEPATH = 0x10,
+        FILTERS = 0x20
     };
     Q_DECLARE_FLAGS(OPTIONS, OPTION)
 

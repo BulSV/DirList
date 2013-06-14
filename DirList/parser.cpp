@@ -21,7 +21,7 @@ void Parser::applyOptions()
     {
         collectorOptions(parseOptions(QString(itsArgv[i])));
     }
-#ifdef DEBUG_
+#ifdef DEBUG
     qDebug() << "getCollectedOptions() =" << getCollectedOptions();
     qDebug() << "(int)getCollectedOptions() =" << (int)getCollectedOptions();
 #endif
@@ -136,7 +136,9 @@ void Parser::recursive(const QString &dirPath)
         {
             if(itsOptions.testFlag(SHOWDIRS))
             {
-                std::cout << std::endl << qPrintable(filePath) << ":" << std::endl;
+//                std::cout << std::endl << qPrintable(filePath) << ":" << std::endl;
+                QString temp = filePath;
+                std::cout << std::endl << "." << qPrintable(temp.remove(0, QString(itsArgv[1]).size())) << ":" << std::endl;
             }
             recursive(filePath);
         }
@@ -241,7 +243,7 @@ void Parser::switcher(Parser::OPTIONS opt)
         parseToConsole();
     }
 
-    // if(save to file)
+    // if save to file
     if(itsDir->isAbsolutePath(itsArgv[2]))
     {
         parseToFile();
@@ -261,6 +263,9 @@ Parser::OPTIONS Parser::parseOptions(QString opt)
             opt == "-hdr" || opt == "-hrd" ||
             opt == "-rdh" || opt == "-rhd")
         return SHOWDIRS | HIDECONSOLE | RECURSIVE;
+    if(opt == "-s") return HIDENFILES;
+    if(opt == "-a") return ABSOLUTEPATH;
+    if(opt.contains("-m:", Qt::CaseSensitive)) return FILTERS;
 
     return NONE;
 }
@@ -268,7 +273,7 @@ Parser::OPTIONS Parser::parseOptions(QString opt)
 void Parser::collectorOptions(Parser::OPTIONS opt)
 {
     itsOptions = itsOptions | opt;
-#ifdef DEBUG_
+#ifdef DEBUG
     qDebug() << "itsOptions =" << QString::number(itsOptions);
 #endif
 }
