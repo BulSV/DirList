@@ -282,3 +282,31 @@ Parser::OPTIONS Parser::getCollectedOptions()
 {
     return itsOptions;
 }
+
+QStringList Parser::optParser(QString opts, QString opt, QString rx, QString sep)
+{
+    QRegExp regExp(rx);
+    int pos = 0;
+    QStringList list;
+    QString str;
+
+    while((pos = regExp.indexIn(opts, pos)) != -1)
+    {
+        str = regExp.cap(1);
+        list.append(str);
+        pos += regExp.matchedLength();
+    }
+
+    QStringList l;
+
+    foreach(QString temp, list)
+    {
+        l.append(temp.replace(QRegExp(sep), ""));
+    }
+
+    list = l;
+    l.clear();
+    list.removeDuplicates();
+
+    return list;
+}
