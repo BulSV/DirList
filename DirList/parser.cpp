@@ -17,7 +17,7 @@ Parser::Parser(int argc, char **argv)
 
 void Parser::applyOptions()
 {
-    collectorOptions(parseOptions());
+    parseOptions();
 #ifdef DEBUG
     qDebug() << "getCollectedOptions() =" << getCollectedOptions();
     qDebug() << "(int)getCollectedOptions() =" << (int)getCollectedOptions();
@@ -116,32 +116,25 @@ void Parser::parseToConsole()
 
 void Parser::help()
 {
-    std::cout << "usage:\t[--help]\n";
-    std::cout << "   or:\t<path to list> [options]\n";
-    std::cout << "   or:\t<path to list> <path and file name to save results> [options]\n";
-    std::cout << "options:\n";
-    std::cout << "\t-d\tshow directories\n";
-    std::cout << "\t-h\thide output to console\n";
-    std::cout << "\t-r\trecursively listing\n";
-    std::cout << "Ctrl+C to skip\n";
+    qDebug() << "usage:\t[--help]\n";
+    qDebug() << "   or:\t<path to list> [options]\n";
+    qDebug() << "   or:\t<path to list> <path and file name to save results> [options]\n";
+    qDebug() << "options:\n";
+    qDebug() << "\t-d\tshow directories\n";
+    qDebug() << "\t-h\thide output to console\n";
+    qDebug() << "\t-r\trecursively listing\n";
+    qDebug() << "Ctrl+C to skip\n";
 }
 
 void Parser::recursive(const QString &dirPath)
 {    
     itsDir->cd(dirPath);
     QFileInfoList list = itsDir->entryInfoList();
-#ifdef DEBUG_
-    qDebug() << "itsDir->entryInfoList().length():" << itsDir->entryInfoList().length();
-#endif
 
     for(int iList = 0; iList < list.size(); ++iList)
     {
         QFileInfo fileInfo = list.at(iList);
         QString filePath = fileInfo.absoluteFilePath();
-#ifdef DEBUG_
-        qDebug() << "list:" << filePath;
-        qDebug() << "list.size:" << list.size();
-#endif
 
         if(fileInfo.isDir())
         {
@@ -252,14 +245,8 @@ void Parser::notRecursive(const QString &dirPath, QTextStream &out)
 
 void Parser::switcher(Parser::OPTIONS opt)
 {
-#ifdef DEBUG_
-    qDebug() << "opt =" << QString::number(opt) << opt.testFlag(HELP);
-#endif
     if(opt.testFlag(HELP))
     {
-#ifdef DEBUG_
-        qDebug() << "help!";
-#endif
         help();
         return;
     }
@@ -282,6 +269,9 @@ Parser::OPTIONS Parser::parseOptions()
     {
         str.append(QString(itsArgv[i]));
     }
+#ifdef DEBUG
+    qDebug() << "str:" << str;
+#endif
 
     QVector <QStringList> opts = polyOptParser(str);
 
@@ -291,6 +281,21 @@ Parser::OPTIONS Parser::parseOptions()
     if(opts.at(1).contains("r")) collectorOptions(RECURSIVE);
     if(opts.at(1).contains("s")) collectorOptions(HIDENFILES);
     if(opts.at(1).contains("a")) collectorOptions(ABSOLUTEPATH);
+
+    if(!opts.at(2).isEmpty())
+    {
+        itsDir->setNameFilters(opts.at(2));
+#ifdef DEBUG
+        qDebug() << "opts.at(2)" << opts.at(2);
+#endif
+    }
+    if(!opts.at(3).isEmpty())
+    {
+        itsDir->setNameFilters(opts.at(3));
+#ifdef DEBUG
+        qDebug() << "opts.at(3)" << opts.at(3);
+#endif
+    }
 
     return getCollectedOptions();
 }
@@ -316,7 +321,7 @@ QVector <QStringList> Parser::polyOptParser(QString str)
     QString opt_help = QString("(--help)");
     QString opt_ext = QString("(--ext:\"%1+\")").arg(ext);
     QString opt_f = QString("(--f:\"%1+\")").arg(f);
-    QString opt = QString("%4?\\s?%1?\\s?%2?\\s?%3?").arg(opt_opt).arg(opt_ext).arg(opt_f).arg(opt_help);
+    QString opt = QString("%1?\\s?%2?\\s?%3?%4?\\s?").arg(opt_help).arg(opt_opt).arg(opt_ext).arg(opt_f);
 
     QRegExp rx_ext(ext);
     QRegExp rx_f(f);
@@ -439,10 +444,17 @@ QVector <QStringList> Parser::polyOptParser(QString str)
 
     QVector <QStringList> list;
 
-    list.append(listHelp);
-    list.append(listOpt);
-    list.append(listExt);
-    list.append(listFiles);
+    list.append(listHelp); // 0
+    list.append(listOpt);  // 1
+    list.append(listExt);  // 2
+    list.append(listFiles);// 3
+
+#ifdef DEBUG
+    qDebug() << "list.at(listHelp)" << list[0];
+    qDebug() << "list.at(listOpt)" << list[1];
+    qDebug() << "list.at(listExt)" << list[2];
+    qDebug() << "list.at(listFiles)" << list[3];
+#endif
 
     return list;
 }
