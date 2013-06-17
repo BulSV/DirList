@@ -40,7 +40,7 @@ private:
     void switcher(OPTIONS opt);
     OPTIONS parseOptions();
     void collectorOptions(OPTIONS opt);
-    OPTIONS getCollectedOptions();
+    OPTIONS getCollectedOptions() const;
     static QVector<QStringList> polyOptParser(QString str);
 };
 
