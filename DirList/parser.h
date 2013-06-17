@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QDir>
 #include <QTextStream>
+#include <QVector>
 
 class Parser
 {        
@@ -17,8 +18,7 @@ public:
         HIDECONSOLE = 0x02,
         RECURSIVE = 0x04,
         HIDENFILES = 0x08,
-        ABSOLUTEPATH = 0x10,
-        FILTERS = 0x20
+        ABSOLUTEPATH = 0x10
     };
     Q_DECLARE_FLAGS(OPTIONS, OPTION)
 
@@ -38,11 +38,10 @@ private:
     QDir *itsDir;
     OPTIONS itsOptions;
     void switcher(OPTIONS opt);
-    OPTIONS parseOptions(QString opt);
+    OPTIONS parseOptions();
     void collectorOptions(OPTIONS opt);
     OPTIONS getCollectedOptions();
-    static QStringList polyOptParser(QString opts, QString opt, QString rx, QString del = "");
-    static QStringList optParser(QString opts, QString rx, QString split, QString del = "");
+    static QVector<QStringList> polyOptParser(QString str);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Parser::OPTIONS)

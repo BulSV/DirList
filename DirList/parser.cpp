@@ -17,10 +17,7 @@ Parser::Parser(int argc, char **argv)
 
 void Parser::applyOptions()
 {
-    for(int i = 1; i < itsArgc; ++i)
-    {
-        collectorOptions(parseOptions(QString(itsArgv[i])));
-    }
+    collectorOptions(parseOptions());
 #ifdef DEBUG
     qDebug() << "getCollectedOptions() =" << getCollectedOptions();
     qDebug() << "(int)getCollectedOptions() =" << (int)getCollectedOptions();
@@ -250,24 +247,24 @@ void Parser::switcher(Parser::OPTIONS opt)
     }
 }
 
-Parser::OPTIONS Parser::parseOptions(QString opt)
-{
-    if(opt == "--help") return HELP;
-    if(opt == "-d") return SHOWDIRS;
-    if(opt == "-h") return HIDECONSOLE;
-    if(opt == "-r") return RECURSIVE;
-    if(opt == "-dh" || opt == "-hd") return SHOWDIRS | HIDECONSOLE;
-    if(opt == "-dr" || opt == "-rd") return SHOWDIRS | RECURSIVE;
-    if(opt == "-hr" || opt == "-rh") return HIDECONSOLE | RECURSIVE;
-    if(opt == "-dhr" || opt == "-drh" ||
-            opt == "-hdr" || opt == "-hrd" ||
-            opt == "-rdh" || opt == "-rhd")
-        return SHOWDIRS | HIDECONSOLE | RECURSIVE;
-    if(opt == "-s") return HIDENFILES;
-    if(opt == "-a") return ABSOLUTEPATH;
-    if(opt.contains("-m:", Qt::CaseSensitive)) return FILTERS;
+Parser::OPTIONS Parser::parseOptions()
+{    
+    QString str;
+    for(int i = 1; i < itsArgc; ++i)
+    {
+        str.append(QString(itsArgv[i]));
+    }
 
-    return NONE;
+    QVector <QStringList> opts = polyOptParser(str);
+
+    if(opts.at(0).contains("help")) collectorOptions(HELP);
+    if(opts.at(1).contains("d")) collectorOptions(SHOWDIRS);
+    if(opts.at(1).contains("h")) collectorOptions(HIDECONSOLE);
+    if(opts.at(1).contains("r")) collectorOptions(RECURSIVE);
+    if(opts.at(1).contains("s")) collectorOptions(HIDENFILES);
+    if(opts.at(1).contains("a")) collectorOptions(ABSOLUTEPATH);
+
+    return getCollectedOptions();
 }
 
 void Parser::collectorOptions(Parser::OPTIONS opt)
@@ -283,46 +280,141 @@ Parser::OPTIONS Parser::getCollectedOptions()
     return itsOptions;
 }
 
-QStringList Parser::polyOptParser(QString opts, QString opt, QString rx, QString del)
+QVector <QStringList> Parser::polyOptParser(QString str)
 {
-    QRegExp rx_opt(opt);
-    QRegExp rx_rx(rx);
-    int pos = 0;
-    QStringList list;
-    QString str;
+    QString ext = QString("(\\*\\.\\w+,?\\s?)");
+    QString f = QString("(\\^\\w+,?\\s?)");
+    QString opt_opt = QString("(-[hrdsa]+[^elp]+)");
+    QString opt_help = QString("(--help)");
+    QString opt_ext = QString("(--ext:\"%1+\")").arg(ext);
+    QString opt_f = QString("(--f:\"%1+\")").arg(f);
+    QString opt = QString("%4?\\s?%1?\\s?%2?\\s?%3?").arg(opt_opt).arg(opt_ext).arg(opt_f).arg(opt_help);
 
-    if(rx_rx.indexIn(opts, pos) != -1)
+    QRegExp rx_ext(ext);
+    QRegExp rx_f(f);
+    QRegExp rx_opt_opt(opt_opt);
+    QRegExp rx_opt_ext(opt_ext);
+    QRegExp rx_opt_f(opt_f);
+    QRegExp rx_opt_help(opt_help);
+    QRegExp rx_opt(opt);
+
+    QStringList listOpt;
+    QStringList listExt;
+    QStringList listFiles;
+    QStringList listHelp;
+
+    int pos = 0;
+
+    QString stringExt;
+    QString stringFiles;
+    QString stringOpt;
+    QString stringHelp;
+
+    if((rx_opt.indexIn(str, 0) != -1) && (rx_opt_help.indexIn(str, 0) == -1))
     {
-        while((pos = rx_opt.indexIn(opts, pos)) != -1)
+        if(rx_opt_opt.indexIn(str, 0) != -1)
         {
-            str = rx_opt.cap(1);
-            list.append(str);
-            pos += rx_opt.matchedLength();
+            while((pos = rx_opt_opt.indexIn(str, pos)) != -1)
+            {
+                stringOpt = rx_opt_opt.cap(1);
+                listOpt.append(stringOpt);
+                pos += rx_opt_opt.matchedLength();
+            }
         }
+        if(rx_opt_ext.indexIn(str, 0) !=-1)
+        {
+            pos = rx_opt_ext.indexIn(str, 0);
+
+            while (((pos = rx_ext.indexIn(str, pos)) != -1) &&
+                   ((pos < rx_opt_f.indexIn(str, 0)) || (rx_opt_f.indexIn(str, 0) == -1)))
+            {
+                stringExt = rx_ext.cap(1);
+                listExt.append(stringExt);
+                pos += rx_ext.matchedLength();
+            }
+        }
+        if(rx_opt_f.indexIn(str, 0) !=-1)
+        {
+            pos = rx_opt_f.indexIn(str, 0);
+            while ((pos = rx_f.indexIn(str, pos)) != -1)
+            {
+                stringFiles = rx_f.cap(1);
+                listFiles.append(stringFiles);
+                pos += rx_f.matchedLength();
+            }
+        }
+    }
+    else if((rx_opt_help.indexIn(str, 0) != -1) && (rx_opt.indexIn(str, 0) != -1))
+    {
+        stringHelp = rx_opt_help.cap(0);
+        listHelp.append(stringHelp);
     }
     else
     {
-        qDebug() << "Options" << opts << "not correcte";
-        qDebug() << "see:" << opt << "and" << rx;
-
-        return list;
+        qDebug() << "Incorrect input options!";
     }
 
-    QStringList l;
+    QStringList sl;
 
-    foreach(QString temp, list)
+    foreach (QString temp_str, listOpt) {
+        sl.append(temp_str.replace(QRegExp("-"), "").split(QRegExp("(?=\\w)"), QString::SkipEmptyParts));
+    }
+    listOpt = sl;
+    sl.clear();
+
+    listOpt.removeDuplicates();
+
+    if(!listOpt.isEmpty())
+        qDebug() << "\nOptions:\n" << listOpt << "\n";
+    else
+        qDebug() << "\nEmpty Options\n";
+
+    foreach (QString temp_str, listExt) {
+        sl.append(temp_str.replace(QRegExp("[\\s,]"), ""));
+    }
+    listExt = sl;
+    sl.clear();
+
+    listExt.removeDuplicates();
+
+    if(!listExt.isEmpty())
+        qDebug() << "\nMask Extensions:\n" << listExt << "\n";
+    else
+        qDebug() << "\nEmpty Mask Extentions\n";
+
+    foreach (QString temp_str, listFiles) {
+        sl.append(temp_str.replace(QRegExp("[\\^\\s,]"), ""));
+    }
+    listFiles = sl;
+    sl.clear();
+
+    listFiles.removeDuplicates();
+
+    if(!listFiles.isEmpty())
+        qDebug() << "\nFiles Names:\n" << listFiles << "\n";
+    else
+        qDebug() << "\nEmpty Files Names\n";
+
+    foreach (QString temp_str, listHelp)
     {
-        l.append(temp.replace(QRegExp(del), ""));
+        sl.append(temp_str.remove(QRegExp("--")));
     }
+    listHelp = sl;
+    sl.clear();
 
-    list = l;
-    l.clear();
-    list.removeDuplicates();
+    listHelp.removeDuplicates();
+
+    if(!listHelp.isEmpty())
+        qDebug() << "\nHelp:\n" << listHelp << "\n";
+    else
+        qDebug() << "\nEmpty Help\n";
+
+    QVector <QStringList> list;
+
+    list.append(listHelp);
+    list.append(listOpt);
+    list.append(listExt);
+    list.append(listFiles);
 
     return list;
-}
-
-QStringList Parser::optParser(QString opts, QString rx, QString split, QString del)
-{
-
 }
