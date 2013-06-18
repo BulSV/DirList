@@ -12,6 +12,7 @@ Parser::Parser(int argc, char **argv)
     , itsArgv(argv)
     , itsDir(new QDir)
     , itsOptions(NONE)
+    , itsFilters(QStringList() << "")
 {
 }
 
@@ -109,8 +110,8 @@ void Parser::help()
     qDebug() << "\t-r\trecursively listing\n";
     qDebug() << "\t-s\tshow hidden files\n";
     qDebug() << "\t-a\tlist absolute paths\n";
-    qDebug() << "\t--ext:\"*.ext1, *.ext2,*.ext3 *.ext4\"\n\t\tcreate mask on listing files extensions\n";
-    qDebug() << "\t--f:\"^fileName1, ^fileName2,^fileName3 ^fileName4\"\n\t\tcreate mask on listing file names\n";
+    qDebug() << "\t--ext:\"*.ext1, *.ext2,*.ext3 *.ext4\"\n\t\tcreate extension mask on listing files\n";
+    qDebug() << "\t--f:\"^fileName1, ^fileName2,^fileName3 ^fileName4\"\n\t\tcreate file names mask on listing files or dirs\n\t\tit understands \"*\" and \"?\" wildcards";
     qDebug() << "Ctrl+C to skip\n";
 }
 
@@ -173,7 +174,6 @@ void Parser::recursive(const QString &dirPath, QTextStream &out)
     {
         QFileInfo fileInfo = list.at(iList);
         QString filePath = fileInfo.absoluteFilePath();
-        itsDir->setNameFilters(QStringList() << "*");
 
         if(fileInfo.isDir())
         {
@@ -293,7 +293,7 @@ Parser::OPTIONS Parser::parseOptions()
 
     if(!opts.at(2).isEmpty())
     {
-        itsDir->setNameFilters(opts.at(2));
+        itsFilters.append(opts.at(2));
 
 #ifdef DEBUG
         qDebug() << "opts.at(2)" << opts.at(2);        
@@ -301,11 +301,13 @@ Parser::OPTIONS Parser::parseOptions()
     }
     if(!opts.at(3).isEmpty())
     {
-        itsDir->setNameFilters(opts.at(3));
+        itsFilters.append(opts.at(3));
 #ifdef DEBUG
         qDebug() << "opts.at(3)" << opts.at(3);
 #endif
     }
+
+    itsDir->setNameFilters(itsFilters);
 
     return getCollectedOptions();
 }
@@ -326,7 +328,7 @@ Parser::OPTIONS Parser::getCollectedOptions() const
 QVector <QStringList> Parser::polyOptParser(QString str)
 {
     QString ext = QString("(\\*\\.\\w+,?\\s?)");
-    QString f = QString("(\\^\\w+,?\\s?)");
+    QString f = QString("(\\^\\*?\\??\\w+\\*?\\??,?\\s?)");
     QString opt_opt = QString("(-[hrdsa]+[^elp]+)");
     QString opt_help = QString("(--help)");
     QString opt_ext = QString("(--ext:\"%1+\")").arg(ext);

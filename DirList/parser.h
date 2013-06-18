@@ -43,6 +43,7 @@ private:
     OPTIONS getCollectedOptions() const;
     static QVector<QStringList> polyOptParser(QString str);
     void dirFilters();
+    QStringList itsFilters;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Parser::OPTIONS)
