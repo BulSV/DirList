@@ -27,14 +27,8 @@ void Parser::applyOptions()
 
 void Parser::parseToFile()
 {    
-    if(itsOptions.testFlag(HIDENFILES))
-    {
-        itsDir->setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
-    }
-    else
-    {
-        itsDir->setFilter(QDir::Files | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
-    }
+    dirFilters();
+
     itsDir->setSorting(QDir::Name | QDir::DirsLast | QDir::Type);
 
     if(!itsDir->exists(itsArgv[1]))
@@ -85,14 +79,8 @@ void Parser::parseToFile()
 void Parser::parseToConsole()
 {
 
-    if(itsOptions.testFlag(HIDENFILES))
-    {
-        itsDir->setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
-    }
-    else
-    {
-        itsDir->setFilter(QDir::Files | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
-    }
+    dirFilters();
+
     itsDir->setSorting(QDir::Name | QDir::DirsLast | QDir::Type);
 
     if(!itsDir->exists(itsArgv[1]))
@@ -123,12 +111,31 @@ void Parser::help()
     qDebug() << "\t-d\tshow directories\n";
     qDebug() << "\t-h\thide output to console\n";
     qDebug() << "\t-r\trecursively listing\n";
+    qDebug() << "\t-s\tshow hidden files\n";
+    qDebug() << "\t-a\tlist absolute paths\n";
+    qDebug() << "\t--ext:\"*.ext1, *.ext2,*.ext3 *.ext4\"\n\t\tcreate mask on listing files extensions\n";
+    qDebug() << "\t--f:\"^fileName1, ^fileName2,^fileName3 ^fileName4\"\n\t\tcreate mask on listing file names\n";
     qDebug() << "Ctrl+C to skip\n";
+}
+
+void Parser::dirFilters()
+{
+    if(itsOptions.testFlag(HIDENFILES))
+    {
+        itsDir->setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
+    }
+    else
+    {
+        itsDir->setFilter(QDir::Files | QDir::NoSymLinks | QDir::Dirs | QDir::NoDotAndDotDot);
+    }
 }
 
 void Parser::recursive(const QString &dirPath)
 {    
     itsDir->cd(dirPath);
+
+    dirFilters();
+
     QFileInfoList list = itsDir->entryInfoList();
 
     for(int iList = 0; iList < list.size(); ++iList)
@@ -197,6 +204,8 @@ void Parser::notRecursive(const QString &dirPath)
 {
     itsDir->cd(dirPath);
 
+    dirFilters();
+
     QFileInfoList list = itsDir->entryInfoList();
 
     for(int iList = 0; iList < list.size(); ++iList)
@@ -221,6 +230,8 @@ void Parser::notRecursive(const QString &dirPath)
 void Parser::notRecursive(const QString &dirPath, QTextStream &out)
 {
     itsDir->cd(dirPath);
+
+    dirFilters();
 
     QFileInfoList list = itsDir->entryInfoList();
 

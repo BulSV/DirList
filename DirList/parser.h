@@ -31,7 +31,7 @@ public:
     void recursive(const QString &dirPath);
     void recursive(const QString &dirPath, QTextStream &out);
     void notRecursive(const QString &dirPath);
-    void notRecursive(const QString &dirPath, QTextStream &out);
+    void notRecursive(const QString &dirPath, QTextStream &out);    
 private:
     int itsArgc;
     char** itsArgv;
@@ -42,6 +42,7 @@ private:
     void collectorOptions(OPTIONS opt);
     OPTIONS getCollectedOptions() const;
     static QVector<QStringList> polyOptParser(QString str);
+    void dirFilters();
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Parser::OPTIONS)
