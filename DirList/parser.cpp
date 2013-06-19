@@ -2,10 +2,7 @@
 #include <QFileInfoList>
 #include <iostream>
 #include <QString>
-
-#ifdef DEBUG
 #include <QDebug>
-#endif
 
 Parser::Parser(int argc, char **argv)
     : itsArgc(argc)
@@ -13,6 +10,8 @@ Parser::Parser(int argc, char **argv)
     , itsDir(new QDir)
     , itsOptions(NONE)
     , itsFilters(QStringList() << "")
+    , itsIn(stdin)
+    , itsOut(stdout)
 {
 }
 
@@ -32,7 +31,7 @@ void Parser::parseToFile()
 
     if(!itsDir->exists(itsArgv[1]))
     {
-        std::cout << "EROR: path to list don't exist\n";
+        itsOut << "EROR: path to list don't exist\n";
         return;
     }
 
@@ -46,12 +45,12 @@ void Parser::parseToFile()
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        std::cout << "ERROR opening file:" << qPrintable(file.fileName());
+        itsOut << "ERROR opening file:" << file.fileName();
         return;
     }
 
     QTextStream out(&file);
-    out << itsArgv[1] << ":" << "\n";
+    out << "ROOT DIR:\n" << itsArgv[1] << ":" << "\n";
 
     QString filePath = info.absoluteFilePath();
 
@@ -67,10 +66,10 @@ void Parser::parseToFile()
     QString p = info.filePath();
     QString n = info.fileName();
 
-    std::cout << "\nSaving file: " << qPrintable(info.fileName())
-              << " into "
-              << qPrintable(p.remove(p.size() - n.size(), p.size() - 1))
-              << std::endl;
+    itsOut << "\nSaving file: " << info.fileName()
+           << " into "
+           << p.remove(p.size() - n.size(), p.size() - 1)
+           << "\n";
 
     file.close();
 }
@@ -82,12 +81,12 @@ void Parser::parseToConsole()
 
     if(!itsDir->exists(itsArgv[1]))
     {
-        std::cout << "EROR: path to list don't exist\n";
+        itsOut << "EROR: path to list don't exist\n";
         return;
     }
 
     itsDir->cd(itsArgv[1]);
-    std::cout << itsArgv[1] << ":" << std::endl;
+    itsOut << "ROOT DIR:\n" << itsArgv[1] << ":\n";
 
     if(itsOptions.testFlag(RECURSIVE))
     {
@@ -101,18 +100,18 @@ void Parser::parseToConsole()
 
 void Parser::help()
 {
-    qDebug() << "usage:\t[--help]\n";
-    qDebug() << "   or:\t<path to list> [options]\n";
-    qDebug() << "   or:\t<path to list> <path and file name to save results> [options]\n";
-    qDebug() << "options:\n";
-    qDebug() << "\t-d\tshow directories\n";
-    qDebug() << "\t-h\thide output to console\n";
-    qDebug() << "\t-r\trecursively listing\n";
-    qDebug() << "\t-s\tshow hidden files\n";
-    qDebug() << "\t-a\tlist absolute paths\n";
-    qDebug() << "\t--ext:\"*.ext1, *.ext2,*.ext3 *.ext4\"\n\t\tcreate extension mask on listing files\n";
-    qDebug() << "\t--f:\"^fileName1, ^fileName2,^fileName3 ^fileName4\"\n\t\tcreate file names mask on listing files or dirs\n\t\tit understands \"*\" and \"?\" wildcards";
-    qDebug() << "Ctrl+C to skip\n";
+    itsOut << "usage:\t[--help]\n";
+    itsOut << "   or:\t<path to list> [options]\n";
+    itsOut << "   or:\t<path to list> <path and file name to save results> [options]\n";
+    itsOut << "options:\n";
+    itsOut << "\t-d\tshow directories\n";
+    itsOut << "\t-h\thide output to console\n";
+    itsOut << "\t-r\trecursively listing\n";
+    itsOut << "\t-s\tshow hidden files\n";
+    itsOut << "\t-a\tlist absolute paths\n";
+    itsOut << "\t--ext:\"*.ext1, *.ext2,*.ext3 *.ext4\"\n\t\tcreate extension mask on listing files\n";
+    itsOut << "\t--f:\"^fileName1, ^fileName2,^fileName3 ^fileName4\"\n\t\tcreate file names mask on listing files or dirs\n\t\tit understands \"*\" and \"?\" wildcards";
+    itsOut << "Ctrl+C to skip\n";
 }
 
 void Parser::dirFilters()
@@ -147,19 +146,19 @@ void Parser::recursive(const QString &dirPath)
             {
                 if(itsOptions.testFlag(ABSOLUTEPATH))
                 {
-                    std::cout << std::endl << qPrintable(filePath) << ":" << std::endl;
+                    itsOut << "\n" << QDir::toNativeSeparators(filePath) << ":\n";
                 }
                 else
-                {                    
+                {
                     QString temp = filePath;
-                    std::cout << std::endl << ".." << qPrintable(temp.remove(0, QString(itsArgv[1]).size())) << ":" << std::endl;
+                    itsOut << "\nSUBDIR:\n..\\" << QDir::toNativeSeparators(temp.remove(0, QString(itsArgv[1]).size())) << ":\n";
                 }
             }
             recursive(filePath);
         }
         else
         {
-            std::cout << qPrintable(fileInfo.fileName()) << std::endl;
+            itsOut << fileInfo.fileName() << "\n";
         }
     }
 }
@@ -181,12 +180,12 @@ void Parser::recursive(const QString &dirPath, QTextStream &out)
             {
                 if(itsOptions.testFlag(ABSOLUTEPATH))
                 {
-                    out << "\n" << filePath << ":" << "\n";
+                    out << "\n" << QDir::toNativeSeparators(filePath) << ":" << "\n";
                 }
                 else
-                {                    
+                {
                     QString temp = filePath;
-                    out << "\n" << ".." << temp.remove(0, QString(itsArgv[1]).size()) << ":\n";
+                    out << "\nSUBDIR:\n..\\" << QDir::toNativeSeparators(temp.remove(0, QString(itsArgv[1]).size())) << ":\n";
                 }
             }
             recursive(filePath, out);
@@ -215,12 +214,12 @@ void Parser::notRecursive(const QString &dirPath)
         {
             if(itsOptions.testFlag(SHOWDIRS))
             {
-                std::cout << std::endl << qPrintable(filePath) << ":" << std::endl;
+                itsOut << "\n" << filePath << ":\n";
             }
         }
         else
         {
-            std::cout << qPrintable(fileInfo.fileName()) << std::endl;
+            itsOut << fileInfo.fileName() << "\n";
         }
     }
 }
@@ -296,7 +295,7 @@ Parser::OPTIONS Parser::parseOptions()
         itsFilters.append(opts.at(2));
 
 #ifdef DEBUG
-        qDebug() << "opts.at(2)" << opts.at(2);        
+        qDebug() << "opts.at(2)" << opts.at(2);
 #endif
     }
     if(!opts.at(3).isEmpty())
@@ -402,7 +401,7 @@ QVector <QStringList> Parser::polyOptParser(QString str)
     }
     else
     {
-        qDebug() << "Incorrect input options!";
+        qErrnoWarning("Incorrect input options!");
     }
 
     QStringList sl;
@@ -415,10 +414,14 @@ QVector <QStringList> Parser::polyOptParser(QString str)
 
     listOpt.removeDuplicates();
 
-    if(!listOpt.isEmpty())
-        qDebug() << "\nOptions:\n" << listOpt << "\n";
+    if(listOpt.isEmpty())
+        qWarning() << "\nEmpty Options\n";
     else
-        qDebug() << "\nEmpty Options\n";
+    {
+#ifdef DEBUG
+        qDebug() << "\nOptions:\n" << listOpt << "\n";
+#endif
+    }
 
     foreach (QString temp_str, listExt) {
         sl.append(temp_str.replace(QRegExp("[\\s,]"), ""));
@@ -428,10 +431,15 @@ QVector <QStringList> Parser::polyOptParser(QString str)
 
     listExt.removeDuplicates();
 
-    if(!listExt.isEmpty())
-        qDebug() << "\nMask Extensions:\n" << listExt << "\n";
+    if(listExt.isEmpty())
+        qWarning() << "\nEmpty Mask Extentions\n";
     else
-        qDebug() << "\nEmpty Mask Extentions\n";
+    {
+#ifdef DEBUG
+        qDebug() << "\nMask Extensions:\n" << listExt << "\n";
+#endif
+    }
+
 
     foreach (QString temp_str, listFiles) {
         sl.append(temp_str.replace(QRegExp("[\\^\\s,]"), ""));
@@ -441,10 +449,15 @@ QVector <QStringList> Parser::polyOptParser(QString str)
 
     listFiles.removeDuplicates();
 
-    if(!listFiles.isEmpty())
-        qDebug() << "\nFiles Names:\n" << listFiles << "\n";
+    if(listFiles.isEmpty())
+        qWarning() << "\nEmpty Files Names\n";
     else
-        qDebug() << "\nEmpty Files Names\n";
+    {
+#ifdef DEBUG
+        qDebug() << "\nFiles Names:\n" << listFiles << "\n";
+#endif
+    }
+
 
     foreach (QString temp_str, listHelp)
     {
@@ -455,10 +468,15 @@ QVector <QStringList> Parser::polyOptParser(QString str)
 
     listHelp.removeDuplicates();
 
-    if(!listHelp.isEmpty())
-        qDebug() << "\nHelp:\n" << listHelp << "\n";
+    if(listHelp.isEmpty())
+        qWarning() << "\nEmpty Help\n";
     else
-        qDebug() << "\nEmpty Help\n";
+    {
+#ifdef DEBUG
+        qDebug() << "\nHelp:\n" << listHelp << "\n";
+#endif
+    }
+
 
     QVector <QStringList> list;
 

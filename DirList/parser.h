@@ -44,6 +44,8 @@ private:
     static QVector<QStringList> polyOptParser(QString str);
     void dirFilters();
     QStringList itsFilters;
+    QTextStream itsIn;
+    QTextStream itsOut;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Parser::OPTIONS)
