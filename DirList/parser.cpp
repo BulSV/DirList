@@ -29,18 +29,18 @@ void Parser::parseToFile()
 {    
     dirFilters();
 
-    if(!itsDir->exists(itsArgv[1]))
+    if(!itsDir->exists(QString::fromLocal8Bit(itsArgv[1])))
     {
         itsOut << "EROR: path to list don't exist\n";
         return;
     }
 
-    itsDir->cd(itsArgv[1]);
+    itsDir->cd(QString::fromLocal8Bit(itsArgv[1]));
 
     QFile file;
     QFileInfo info;
 
-    file.setFileName(itsArgv[2]);
+    file.setFileName(QString::fromLocal8Bit(itsArgv[2]));
     info.setFile(file);
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -50,7 +50,7 @@ void Parser::parseToFile()
     }
 
     QTextStream out(&file);
-    out << "ROOT DIR:\n" << itsArgv[1] << ":" << "\n";
+    out << "ROOT DIR:\n" << QString::fromLocal8Bit(itsArgv[1]) << ":" << "\n";
 
     QString filePath = info.absoluteFilePath();
 
@@ -79,14 +79,14 @@ void Parser::parseToConsole()
 
     dirFilters();
 
-    if(!itsDir->exists(itsArgv[1]))
+    if(!itsDir->exists(QString::fromLocal8Bit(itsArgv[1])))
     {
         itsOut << "EROR: path to list don't exist\n";
         return;
     }
 
-    itsDir->cd(itsArgv[1]);
-    itsOut << "ROOT DIR:\n" << itsArgv[1] << ":\n";
+    itsDir->cd(QString::fromLocal8Bit(itsArgv[1]));
+    itsOut << "ROOT DIR:\n" << QString::fromLocal8Bit(itsArgv[1]) << ":\n";
 
     if(itsOptions.testFlag(RECURSIVE))
     {
@@ -151,7 +151,7 @@ void Parser::recursive(const QString &dirPath)
                 else
                 {
                     QString temp = filePath;
-                    itsOut << "\nSUBDIR:\n..\\" << QDir::toNativeSeparators(temp.remove(0, QString(itsArgv[1]).size())) << ":\n";
+                    itsOut << "\nSUBDIR:\n.." << QDir::toNativeSeparators(temp.remove(0, QString(itsArgv[1]).size())) << ":\n";
                 }
             }
             recursive(filePath);
@@ -185,7 +185,7 @@ void Parser::recursive(const QString &dirPath, QTextStream &out)
                 else
                 {
                     QString temp = filePath;
-                    out << "\nSUBDIR:\n..\\" << QDir::toNativeSeparators(temp.remove(0, QString(itsArgv[1]).size())) << ":\n";
+                    out << "\nSUBDIR:\n.." << QDir::toNativeSeparators(temp.remove(0, QString(itsArgv[1]).size())) << ":\n";
                 }
             }
             recursive(filePath, out);
@@ -246,7 +246,7 @@ void Parser::notRecursive(const QString &dirPath, QTextStream &out)
         }
         else
         {
-            out << qPrintable(fileInfo.fileName()) << "\n";
+            out << fileInfo.fileName() << "\n";
         }
     }
 }
@@ -275,7 +275,7 @@ Parser::OPTIONS Parser::parseOptions()
     QString str;
     for(int i = 1; i < itsArgc; ++i)
     {
-        str.append(QString(itsArgv[i]));
+        str.append(QString::fromLocal8Bit(itsArgv[i]));
     }
 #ifdef DEBUG
     qDebug() << "str:" << str;
