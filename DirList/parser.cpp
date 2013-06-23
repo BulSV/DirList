@@ -1,18 +1,18 @@
 #include "parser.h"
 #include <QFileInfoList>
-#include <iostream>
 #include <QString>
 #include <QDebug>
+
+#define ONESYMBOL 1000
+#define SYMBOLBLOCK 20000
 
 Parser::Parser(int argc, char **argv)
     : itsArgc(argc)
     , itsArgv(argv)
     , itsDir(new QDir)
     , itsOptions(NONE)
-    , itsFilters(QStringList() << "")
-    , itsIn(stdin)
-    , itsOut(stdout)
-{
+    , itsFilters(QStringList() << "")    
+{    
 }
 
 void Parser::applyOptions()
@@ -29,42 +29,59 @@ void Parser::parseToFile()
 {    
     dirFilters();
 
+#ifdef Q_OS_LINUX
+    if(!itsDir->exists(itsArgv[1]))
+#else
     if(!itsDir->exists(QString::fromLocal8Bit(itsArgv[1])))
+#endif
     {
-        itsOut << "EROR: path to list don't exist\n";
+        qCritical() << "EROR: path to list don't exist\n";
         return;
     }
 
+#ifdef Q_OS_LINUX
+    itsDir->cd(itsArgv[1]);
+#else
     itsDir->cd(QString::fromLocal8Bit(itsArgv[1]));
-
+#endif
     QFile file;
     QFileInfo info;
 
+#ifdef Q_OS_LINUX
+    file.setFileName(itsArgv[2]);
+#else
     file.setFileName(QString::fromLocal8Bit(itsArgv[2]));
+#endif
     info.setFile(file);
 
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-        itsOut << "ERROR opening file:" << file.fileName();
+        qCritical() << "ERROR opening file:" << file.fileName();
         return;
     }
 
     QTextStream out(&file);
+#ifdef Q_OS_LINUX
+    out << "ROOT DIR:\n" << itsArgv[1] << ":" << "\n";
+#else
     out << "ROOT DIR:\n" << QString::fromLocal8Bit(itsArgv[1]) << ":" << "\n";
+#endif
 
     QString filePath = info.absoluteFilePath();
 
     if(itsOptions.testFlag(RECURSIVE))
-    {
+    {        
         recursive(filePath, out);
     }
     else
-    {
+    {        
         notRecursive(filePath, out);
     }
 
     QString p = info.filePath();
     QString n = info.fileName();
+
+    QTextStream itsOut(stdout);
 
     itsOut << "\nSaving file: " << info.fileName()
            << " into "
@@ -79,14 +96,25 @@ void Parser::parseToConsole()
 
     dirFilters();
 
+#ifdef Q_OS_LINUX
+    if(!itsDir->exists(itsArgv[1]))
+#else
     if(!itsDir->exists(QString::fromLocal8Bit(itsArgv[1])))
+#endif
     {
-        itsOut << "EROR: path to list don't exist\n";
+        qCritical() << "EROR: path to list don't exist\n";
         return;
     }
 
+    QTextStream itsOut(stdout);
+
+#ifdef Q_OS_LINUX
+    itsDir->cd(itsArgv[1]);
+    itsOut << "ROOT DIR:\n" << itsArgv[1] << ":\n";
+#else
     itsDir->cd(QString::fromLocal8Bit(itsArgv[1]));
     itsOut << "ROOT DIR:\n" << QString::fromLocal8Bit(itsArgv[1]) << ":\n";
+#endif
 
     if(itsOptions.testFlag(RECURSIVE))
     {
@@ -100,18 +128,20 @@ void Parser::parseToConsole()
 
 void Parser::help()
 {
-    itsOut << "usage:\t[--help]\n";
+    QTextStream itsOut(stdout);
+
+    itsOut << "usage:\t[--help]\tthis help\n";
     itsOut << "   or:\t<path to list> [options]\n";
     itsOut << "   or:\t<path to list> <path and file name to save results> [options]\n";
-    itsOut << "options:\n";
+    itsOut << "\noptions:\n";
     itsOut << "\t-d\tshow directories\n";
     itsOut << "\t-h\thide output to console\n";
     itsOut << "\t-r\trecursively listing\n";
     itsOut << "\t-s\tshow hidden files\n";
     itsOut << "\t-a\tlist absolute paths\n";
     itsOut << "\t--ext:\"*.ext1, *.ext2,*.ext3 *.ext4\"\n\t\tcreate extension mask on listing files\n";
-    itsOut << "\t--f:\"^fileName1, ^fileName2,^fileName3 ^fileName4\"\n\t\tcreate file names mask on listing files or dirs\n\t\tit understands \"*\" and \"?\" wildcards";
-    itsOut << "Ctrl+C to skip\n";
+    itsOut << "\t--f:\"^fileName1, ^fileName2,^fileName3 ^fileName4\"\n\t\tcreate file names mask on listing files or dirs\n\t\tit understands \"*\" and \"?\" wildcards\n";
+    itsOut << "\nPress Ctrl+C to skip\n";
 }
 
 void Parser::dirFilters()
@@ -134,6 +164,7 @@ void Parser::recursive(const QString &dirPath)
     dirFilters();
 
     QFileInfoList list = itsDir->entryInfoList();
+    QTextStream itsOut(stdout);
 
     for(int iList = 0; iList < list.size(); ++iList)
     {
@@ -146,7 +177,7 @@ void Parser::recursive(const QString &dirPath)
             {
                 if(itsOptions.testFlag(ABSOLUTEPATH))
                 {
-                    itsOut << "\n" << QDir::toNativeSeparators(filePath) << ":\n";
+                    itsOut << "\nSUBDIR:\n" << QDir::toNativeSeparators(filePath) << ":\n";
                 }
                 else
                 {
@@ -165,6 +196,24 @@ void Parser::recursive(const QString &dirPath)
 
 void Parser::recursive(const QString &dirPath, QTextStream &out)
 {    
+    if(itsOptions.testFlag(HIDECONSOLE))
+    {
+        QTextStream itsOut(stdout);
+        static int i = 0;
+        i++;
+        itsOut.flush();
+        if(!(i % ONESYMBOL))
+            itsOut <<"=";
+        if (!(i % SYMBOLBLOCK))
+        {
+            itsOut << "\r";
+            for(int j = 0; j < SYMBOLBLOCK/ONESYMBOL; ++j)
+            {
+                itsOut << " " ;
+            }
+            itsOut << "\r";
+        }
+    }
     itsDir->cd(dirPath);
 
     QFileInfoList list = itsDir->entryInfoList();
@@ -180,7 +229,7 @@ void Parser::recursive(const QString &dirPath, QTextStream &out)
             {
                 if(itsOptions.testFlag(ABSOLUTEPATH))
                 {
-                    out << "\n" << QDir::toNativeSeparators(filePath) << ":" << "\n";
+                    out << "\nSUBDIR:\n" << QDir::toNativeSeparators(filePath) << ":" << "\n";
                 }
                 else
                 {
@@ -204,6 +253,7 @@ void Parser::notRecursive(const QString &dirPath)
     dirFilters();
 
     QFileInfoList list = itsDir->entryInfoList();
+    QTextStream itsOut(stdout);
 
     for(int iList = 0; iList < list.size(); ++iList)
     {
