@@ -7,8 +7,10 @@
 #include <QTextStream>
 #include <QVector>
 
-class Parser
-{        
+class Parser: public QObject
+{
+    Q_OBJECT
+
 public:
     enum OPTION
     {
@@ -22,28 +24,31 @@ public:
     };
     Q_DECLARE_FLAGS(OPTIONS, OPTION)
 
-    Parser(int argc, char** argv);
+    explicit Parser(int argc, char** argv, QObject *parent = 0);
 
     void applyOptions();
+private:
+    int itsArgc;
+    char** itsArgv;
+    QDir *itsDir;
+    OPTIONS itsOptions;
     void parseToFile();
     void parseToConsole();
     void help();
     void recursive(const QString &dirPath);
     void recursive(const QString &dirPath, QTextStream &out);
     void notRecursive(const QString &dirPath);
-    void notRecursive(const QString &dirPath, QTextStream &out);    
-private:
-    int itsArgc;
-    char** itsArgv;
-    QDir *itsDir;
-    OPTIONS itsOptions;
+    void notRecursive(const QString &dirPath, QTextStream &out);
     void switcher(OPTIONS opt);
     OPTIONS parseOptions();
     void collectorOptions(OPTIONS opt);
     OPTIONS getCollectedOptions() const;
-    static QVector<QStringList> polyOptParser(QString str);
+    QVector<QStringList> polyOptParser(QString str);
     void dirFilters();
-    QStringList itsFilters;    
+    void wait();
+    QStringList itsFilters;
+signals:
+    void finished();
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Parser::OPTIONS)

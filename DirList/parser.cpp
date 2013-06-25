@@ -3,11 +3,12 @@
 #include <QString>
 #include <QDebug>
 
-#define ONESYMBOL 1000
-#define SYMBOLBLOCK 20000
+#define ONESYMBOL 100
+#define SYMBOLBLOCK 2000
 
-Parser::Parser(int argc, char **argv)
-    : itsArgc(argc)
+Parser::Parser(int argc, char **argv, QObject *parent)
+    : QObject(parent)
+    , itsArgc(argc)
     , itsArgv(argv)
     , itsDir(new QDir)
     , itsOptions(NONE)
@@ -17,12 +18,13 @@ Parser::Parser(int argc, char **argv)
 
 void Parser::applyOptions()
 {
-    parseOptions();
 #ifdef DEBUG
     qDebug() << "getCollectedOptions() =" << getCollectedOptions();
     qDebug() << "(int)getCollectedOptions() =" << (int)getCollectedOptions();
 #endif
-    switcher(getCollectedOptions());
+    switcher(parseOptions());
+
+    emit finished();
 }
 
 void Parser::parseToFile()
@@ -65,7 +67,7 @@ void Parser::parseToFile()
     out << "ROOT DIR:\n" << itsArgv[1] << ":" << "\n";
 #else
     out << "ROOT DIR:\n" << QString::fromLocal8Bit(itsArgv[1]) << ":" << "\n";
-#endif
+#endif    
 
     QString filePath = info.absoluteFilePath();
 
@@ -76,7 +78,7 @@ void Parser::parseToFile()
     else
     {        
         notRecursive(filePath, out);
-    }
+    }    
 
     QString p = info.filePath();
     QString n = info.fileName();
@@ -114,6 +116,7 @@ void Parser::parseToConsole()
 #else
     itsDir->cd(QString::fromLocal8Bit(itsArgv[1]));
     itsOut << "ROOT DIR:\n" << QString::fromLocal8Bit(itsArgv[1]) << ":\n";
+    itsOut.flush(); // чтобы ROOT DIR выводился в начале, а не в конце
 #endif
 
     if(itsOptions.testFlag(RECURSIVE))
@@ -185,7 +188,9 @@ void Parser::recursive(const QString &dirPath)
                     itsOut << "\nSUBDIR:\n.." << QDir::toNativeSeparators(temp.remove(0, QString(itsArgv[1]).size())) << ":\n";
                 }
             }
-            recursive(filePath);
+            itsOut.flush(); // чтобы после ROOT DIR:\nпуть к корневой папке\n было "..ке\n", т.е. сробатывл перевод строки
+                            // + к тому же, чтобы, если там будут нужные для вывода файлы, они выводились в правильном порядке
+            recursive(filePath);            
         }
         else
         {
@@ -194,8 +199,8 @@ void Parser::recursive(const QString &dirPath)
     }
 }
 
-void Parser::recursive(const QString &dirPath, QTextStream &out)
-{    
+void Parser::wait()
+{
     if(itsOptions.testFlag(HIDECONSOLE))
     {
         QTextStream itsOut(stdout);
@@ -207,13 +212,20 @@ void Parser::recursive(const QString &dirPath, QTextStream &out)
         if (!(i % SYMBOLBLOCK))
         {
             itsOut << "\r";
+
             for(int j = 0; j < SYMBOLBLOCK/ONESYMBOL; ++j)
             {
                 itsOut << " " ;
             }
+
             itsOut << "\r";
         }
     }
+}
+
+void Parser::recursive(const QString &dirPath, QTextStream &out)
+{    
+    wait();
     itsDir->cd(dirPath);
 
     QFileInfoList list = itsDir->entryInfoList();
@@ -276,6 +288,8 @@ void Parser::notRecursive(const QString &dirPath)
 
 void Parser::notRecursive(const QString &dirPath, QTextStream &out)
 {
+    wait();
+
     itsDir->cd(dirPath);
 
     dirFilters();
@@ -308,6 +322,7 @@ void Parser::switcher(Parser::OPTIONS opt)
         help();
         return;
     }
+
     if(!opt.testFlag(HIDECONSOLE))
     {
         parseToConsole();
