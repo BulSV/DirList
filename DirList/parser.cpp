@@ -64,9 +64,9 @@ void Parser::parseToFile()
 
     QTextStream out(&file);
 #ifdef Q_OS_LINUX
-    out << "ROOT DIR:\n" << itsArgv[1] << ":" << "\n";
+    out << "ROOT DIR:\n" << QDir::toNativeSeparators(itsArgv[1]) << ":" << "\n";
 #else
-    out << "ROOT DIR:\n" << QString::fromLocal8Bit(itsArgv[1]) << ":" << "\n";
+    out << "ROOT DIR:\n" << QDir::toNativeSeparators(QString::fromLocal8Bit(itsArgv[1])) << ":" << "\n";
 #endif    
 
     QString filePath = info.absoluteFilePath();
@@ -87,7 +87,7 @@ void Parser::parseToFile()
 
     itsOut << "\nSaving file: " << info.fileName()
            << " into "
-           << p.remove(p.size() - n.size(), p.size() - 1)
+           << QDir::toNativeSeparators(p.remove(p.size() - n.size(), p.size() - 1))
            << "\n";
 
     file.close();
@@ -112,10 +112,10 @@ void Parser::parseToConsole()
 
 #ifdef Q_OS_LINUX
     itsDir->cd(itsArgv[1]);
-    itsOut << "ROOT DIR:\n" << itsArgv[1] << ":\n";
+    itsOut << "ROOT DIR:\n" << QDir::toNativeSeparators(itsArgv[1]) << ":\n";
 #else
     itsDir->cd(QString::fromLocal8Bit(itsArgv[1]));
-    itsOut << "ROOT DIR:\n" << QString::fromLocal8Bit(itsArgv[1]) << ":\n";
+    itsOut << "ROOT DIR:\n" << QDir::toNativeSeparators(QString::fromLocal8Bit(itsArgv[1])) << ":\n";
     itsOut.flush(); // чтобы ROOT DIR выводился в начале, а не в конце
 #endif
 
