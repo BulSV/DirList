@@ -5,9 +5,21 @@
 
 #include "parser.h"
 
+void outputArgs(int argc, char** argv)
+{
+    for(int i = 0; i < argc; ++i)
+    {
+        qDebug() << "\n\nThis is args:\n";
+        qDebug() << QString::fromLocal8Bit(argv[i]);
+        qDebug() << "\n\n";
+    }
+}
+
 int main(int argc, char** argv)
 {
     QCoreApplication app(argc, argv);
+
+//    outputArgs(argc, argv);
 
     Parser parse(argc, argv);
 

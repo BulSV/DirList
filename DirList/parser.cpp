@@ -175,8 +175,8 @@ void Parser::recursive(const QString &dirPath)
         QString filePath = fileInfo.absoluteFilePath();
 
         if(fileInfo.isDir())
-        {
-            if(itsOptions.testFlag(SHOWDIRS))
+        {            
+            if(itsOptions.testFlag(SHOWDIRS) && !list.isEmpty())
             {
                 if(itsOptions.testFlag(ABSOLUTEPATH))
                 {
@@ -190,7 +190,7 @@ void Parser::recursive(const QString &dirPath)
             }
             itsOut.flush(); // чтобы после ROOT DIR:\nпуть к корневой папке\n было "..ке\n", т.е. сробатывл перевод строки
                             // + к тому же, чтобы, если там будут нужные для вывода файлы, они выводились в правильном порядке
-            recursive(filePath);            
+            recursive(filePath);
         }
         else
         {
@@ -397,7 +397,10 @@ QVector <QStringList> Parser::polyOptParser(QString str)
     QString opt_help = QString("(--help)");
     QString opt_ext = QString("(--ext:\"%1+\")").arg(ext);
     QString opt_f = QString("(--f:\"%1+\")").arg(f);
-    QString opt = QString("%1?\\s?%2?\\s?%3?%4?\\s?").arg(opt_help).arg(opt_opt).arg(opt_ext).arg(opt_f);
+    QString path_address = QString("(\\w:\\\\.+\\b)(?=\\s+\\w:\\\\.+)");
+    QString file_save_address = QString("\\w:\\\\.+(\\w:\\\\.+.txt)(?!\\w:\\\\.+)");
+    QString opt = QString("%5\\s?%6\\s?%1?\\s?%2?\\s?%3?%4?\\s?").arg(opt_help).
+            arg(opt_opt).arg(opt_ext).arg(opt_f).arg(path_address).arg(file_save_address);    
 
     QRegExp rx_ext(ext);
     QRegExp rx_f(f);
@@ -405,12 +408,22 @@ QVector <QStringList> Parser::polyOptParser(QString str)
     QRegExp rx_opt_ext(opt_ext);
     QRegExp rx_opt_f(opt_f);
     QRegExp rx_opt_help(opt_help);
+    QRegExp rx_path(path_address);
+    QRegExp rx_file(file_save_address);
     QRegExp rx_opt(opt);
+
+#ifdef DEBUG
+    qDebug() << "rx_opt is valid?" << rx_opt.isValid();
+    qDebug() << "str:" << str;
+    qDebug() << "rx_opt.indexIn(str, 0) =" << rx_opt.indexIn(str, 0);
+#endif
 
     QStringList listOpt;
     QStringList listExt;
     QStringList listFiles;
     QStringList listHelp;
+    QStringList listPath;
+    QStringList listFile;
 
     int pos = 0;
 
@@ -418,9 +431,29 @@ QVector <QStringList> Parser::polyOptParser(QString str)
     QString stringFiles;
     QString stringOpt;
     QString stringHelp;
+    QString stringPath;
+    QString stringFile;
 
     if((rx_opt.indexIn(str, 0) != -1) && (rx_opt_help.indexIn(str, 0) == -1))
     {
+        while((pos = rx_path.indexIn(str, pos)) != -1)
+        {
+            stringPath = rx_path.cap(1);
+            listPath.append(stringPath);
+            pos += rx_path.matchedLength();
+        }
+
+        pos = 0;
+
+        while((pos = rx_file.indexIn(str, pos)) != -1)
+        {
+            stringFile = rx_file.cap(1);
+            listFile.append(stringFile);
+            pos += rx_file.matchedLength();
+        }
+
+        pos = 0;
+
         if(rx_opt_opt.indexIn(str, 0) != -1)
         {
             while((pos = rx_opt_opt.indexIn(str, pos)) != -1)
@@ -480,7 +513,10 @@ QVector <QStringList> Parser::polyOptParser(QString str)
     listOpt.removeDuplicates();
 
     if(listOpt.isEmpty())
+    {
+        listOpt.append("");
         qWarning() << "\nEmpty Options\n";
+    }
     else
     {
 #ifdef DEBUG
@@ -497,7 +533,10 @@ QVector <QStringList> Parser::polyOptParser(QString str)
     listExt.removeDuplicates();
 
     if(listExt.isEmpty())
+    {
+        listExt.append("");
         qWarning() << "\nEmpty Mask Extentions\n";
+    }
     else
     {
 #ifdef DEBUG
@@ -515,7 +554,10 @@ QVector <QStringList> Parser::polyOptParser(QString str)
     listFiles.removeDuplicates();
 
     if(listFiles.isEmpty())
+    {
+        listFiles.append("");
         qWarning() << "\nEmpty Files Names\n";
+    }
     else
     {
 #ifdef DEBUG
@@ -534,7 +576,10 @@ QVector <QStringList> Parser::polyOptParser(QString str)
     listHelp.removeDuplicates();
 
     if(listHelp.isEmpty())
+    {
+        listHelp.append("");
         qWarning() << "\nEmpty Help\n";
+    }
     else
     {
 #ifdef DEBUG
@@ -549,12 +594,19 @@ QVector <QStringList> Parser::polyOptParser(QString str)
     list.append(listOpt);  // 1
     list.append(listExt);  // 2
     list.append(listFiles);// 3
+    list.append(listPath); // 4
+    list.append(listFile); // 5
+
+    itsArgv[1] = list.at(4).at(0).toAscii().data();
+    itsArgv[2] = list.at(5).at(0).toAscii().data();
 
 #ifdef DEBUG
     qDebug() << "list.at(listHelp)" << list[0];
     qDebug() << "list.at(listOpt)" << list[1];
     qDebug() << "list.at(listExt)" << list[2];
     qDebug() << "list.at(listFiles)" << list[3];
+    qDebug() << "list.at(listPath)" << list.at(4);
+    qDebug() << "list.at(listFile)" << list.at(5);
 #endif
 
     return list;
